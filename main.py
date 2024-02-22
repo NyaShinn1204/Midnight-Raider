@@ -15,10 +15,10 @@ from customtkinter import *
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 
-version = "0.1.0"
+version = "1.0.0"
 
 def printl(num, data):
-  filename = __file__
+  filename = os.path.basename(__file__)
   if num == "error":
     print(f"[{Fore.LIGHTRED_EX}Error{Fore.RESET}] [{filename}] " + data)
   if num == "debug":
@@ -44,6 +44,13 @@ def get_hwid():
 System.Size(120, 30)
 System.Clear()
 
+root = tk.Tk()
+root.geometry("1280x720")
+root.resizable(0, 0)
+root.title("Midnight Raider | "+version)
+root.iconbitmap("./data/icon.ico")
+root.configure(bg="#fff")
+
 # Load First
 logo = f"""
                     ___  ____     _       _       _     _    ______      _     _           
@@ -57,31 +64,12 @@ logo = f"""
 """
 
 info = f"""
-You HWID: [{get_hwid()}]                Version: [{version}]
+HWID: [{get_hwid()}]                Version: [{version}]
 """
 print(Colorate.Horizontal(Colors.white_to_blue, Center.XCenter(logo)))
 print(Colorate.Color(Colors.white, Center.XCenter(info)))
+print("""
 
-# Output
-
-
-#                                  ___  ____     _       _       _     _    ______      _     _
-#                  ..&@.           |  \/  (_)   | |     (_)     | |   | |   | ___ \    (_)   | |
-#                ..@@@&.           | .  . |_  __| |_ __  _  __ _| |__ | |_  | |_/ /__ _ _  __| | ___ _ __
-#                .&&&&&,..         | |\/| | |/ _` | '_ \| |/ _` | '_ \| __| |    // _` | |/ _` |/ _ \ '__|
-#                ..&&&&&&&#.       | |  | | | (_| | | | | | (_| | | | | |_  | |\ \ (_| | | (_| |  __/ |
-#                  ..#&&&...       \_|  |_/_|\__,_|_| |_|_|\__, |_| |_|\__| \_| \_\__,_|_|\__,_|\___|_|
-#                                                           __/ |
-#                                                          |___/
-#
-#                    You HWID: [BFA3C0C0-77D2-5F57-D558-663A669C1043]                Version: [0.1.0]
-
-
-
-#b = Fore.WHITE + Fore.LIGHTCYAN_EX + Fore.LIGHTBLUE_EX
-#print(f"{b}{logo}{Fore.RESET}")
-
-#print(f"""
-#You HWID: [{get_hwid()}]                Version: [{version}]
-#-----------------------"""
-#)
+------------------------------------------------------------------------------------------------------------------------""")
+printl("info", "Loading GUI")
+root.mainloop()
