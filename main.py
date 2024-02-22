@@ -41,6 +41,9 @@ def get_hwid():
   except:
     printl("error", "get_hwid exception error wrong")
 
+System.Size(120, 30)
+System.Clear()
+
 # Load First
 logo = f"""
                     ___  ____     _       _       _     _    ______      _     _           
@@ -52,8 +55,33 @@ logo = f"""
                                              __/ |                                         
                                             |___/                                      
 """
-print(Colorate.Horizontal(Colors.white_to_blue, logo, 1))
-print(f"""
+
+info = f"""
 You HWID: [{get_hwid()}]                Version: [{version}]
------------------------"""
-)
+"""
+print(Colorate.Horizontal(Colors.white_to_blue, Center.XCenter(logo)))
+print(Colorate.Color(Colors.white, Center.XCenter(info)))
+
+# Output
+
+
+#                                  ___  ____     _       _       _     _    ______      _     _
+#                  ..&@.           |  \/  (_)   | |     (_)     | |   | |   | ___ \    (_)   | |
+#                ..@@@&.           | .  . |_  __| |_ __  _  __ _| |__ | |_  | |_/ /__ _ _  __| | ___ _ __
+#                .&&&&&,..         | |\/| | |/ _` | '_ \| |/ _` | '_ \| __| |    // _` | |/ _` |/ _ \ '__|
+#                ..&&&&&&&#.       | |  | | | (_| | | | | | (_| | | | | |_  | |\ \ (_| | | (_| |  __/ |
+#                  ..#&&&...       \_|  |_/_|\__,_|_| |_|_|\__, |_| |_|\__| \_| \_\__,_|_|\__,_|\___|_|
+#                                                           __/ |
+#                                                          |___/
+#
+#                    You HWID: [BFA3C0C0-77D2-5F57-D558-663A669C1043]                Version: [0.1.0]
+
+
+
+#b = Fore.WHITE + Fore.LIGHTCYAN_EX + Fore.LIGHTBLUE_EX
+#print(f"{b}{logo}{Fore.RESET}")
+
+#print(f"""
+#You HWID: [{get_hwid()}]                Version: [{version}]
+#-----------------------"""
+#)
