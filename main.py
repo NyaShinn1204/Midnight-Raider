@@ -59,7 +59,29 @@ root.configure(bg="#baebfb")
 def load_background():
   ctk.CTkLabel(master=root,image=ctk.CTkImage(Image.open("./data/background-01.jpg"),size=(1280,720)),text="").pack()
 
-# Load First
+
+def module_list_frame():
+  #global modulelist
+  tk.Label(root, bg="#baebfb", width=1024, height=720).place(x=0,y=0)
+  tk.Label(root, bg="#0f1314", width=32, height=720).place(x=0,y=0)
+  ctk.CTkLabel(master=root,image=ctk.CTkImage(Image.open("./data/icon.png"),size=(80,80)),text="").place(x=5,y=5)
+  #tk.Label(root, bg="#020b1f", text="THREECOIN RAIDER", fg="#fff", font=("Carlito", 20, "bold")).place(x=5,y=25)
+  
+#  modulelist = ctk.CTkFrame(master=root, width=230, height=720, corner_radius=0, fg_color=c4)
+#  modulelist.place(x=0,y=100)
+#  tk.Canvas(bg=c6, highlightthickness=0, height=2080, width=4).place(x=230, y=0)
+#  ctk.CTkButton(master=modulelist, image=ctk.CTkImage(Image.open("data/join_leave.png"),size=(20, 20)), compound="left", fg_color=c4, hover_color=c5, corner_radius=0, text=lang_load_set("joiner_leaver"), width=195, height=40, font=set_fonts(16, "bold"), anchor="w", command= lambda: module_scroll_frame(1, 1)).place(x=20,y=12)
+#  ctk.CTkButton(master=modulelist, image=ctk.CTkImage(Image.open("data/spammer.png"),size=(20, 20)), compound="left", fg_color=c4, hover_color=c5, corner_radius=0, text=lang_load_set("spammer"), width=195, height=40, font=set_fonts(16, "bold"), anchor="w", command= lambda: module_scroll_frame(1, 2)).place(x=20,y=57)
+#  ctk.CTkButton(master=modulelist, image=ctk.CTkImage(Image.open("data/setting.png"),size=(20, 20)), compound="left", fg_color=c4, hover_color=c5, corner_radius=0, text=lang_load_set("settings"), width=195, height=40, font=set_fonts(16, "bold"), anchor="w", command= lambda: module_scroll_frame(2, 1)).place(x=20,y=516)
+#  ctk.CTkButton(master=modulelist, image=ctk.CTkImage(Image.open("data/info.png"),size=(20, 20)), compound="left", fg_color=c4, hover_color=c5, corner_radius=0, text=lang_load_set("about"), width=195, height=40, font=set_fonts(16, "bold"), anchor="w", command= lambda: module_scroll_frame(2, 2)).place(x=20,y=562)
+#  
+#  credit_frame = ctk.CTkFrame(root, width=1020, height=50, fg_color=c1, bg_color=c2)
+#  credit_frame.place(x=245, y=10)
+#  ctk.CTkButton(master=credit_frame, image=ctk.CTkImage(Image.open("data/link.png"),size=(20, 20)), compound="right", fg_color=c1, text_color="#fff", corner_radius=0, text="", width=20, height=20, font=set_fonts(16, None), anchor="w", command= lambda: CTkMessagebox(title="Version Info", message=f"Version: {version}\n\nDeveloper: {developer}\nTester: {testers}", width=450)).place(x=10,y=10)
+#  ctk.CTkLabel(master=credit_frame, fg_color=c1, text_color="#fff", corner_radius=0, text=lang_load_set("username")+": "+os.getlogin(), width=20, height=20, font=set_fonts(16, "bold"), anchor="w").place(x=40,y=5)
+#  ctk.CTkLabel(master=credit_frame, fg_color=c1, text_color="#fff", corner_radius=0, text="Hwid: "+get_hwid(), width=20, height=20, font=set_fonts(16, "bold"), anchor="w").place(x=40,y=25)
+
+
 logo = f"""
                     ___  ____     _       _       _     _    ______      _     _           
     ..&@.           |  \/  (_)   | |     (_)     | |   | |   | ___ \    (_)   | |          
@@ -77,9 +99,10 @@ print(Colorate.Horizontal(Colors.white_to_blue, Center.XCenter(logo)))
 print(Colorate.Color(Colors.white, Center.XCenter(info)))
 print("""\n------------------------------------------------------------------------------------------------------------------------""")
 printl("info", "Loading GUI")
-load_background()
+#load_background()
+module_list_frame()
 printl("info", "Starting RPC")
 threading.Thread(target=rpc.start).start()
 
-
+0
 root.mainloop()
