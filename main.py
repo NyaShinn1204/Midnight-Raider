@@ -47,6 +47,13 @@ def get_hwid():
 System.Size(120, 30)
 System.Clear()
 
+root = tk.Tk()
+root.geometry("1280x720")
+root.resizable(0, 0)
+root.title("Midnight Raider | "+version)
+root.iconbitmap("./data/icon.ico")
+root.configure(bg="#baebfb")
+
 # Load First
 logo = f"""
                     ___  ____     _       _       _     _    ______      _     _           
@@ -58,20 +65,14 @@ logo = f"""
                                              __/ |                                         
                                             |___/                                      
 """
-
 info = f"""
 HWID: [{get_hwid()}]                Version: [{version}]
 """
 print(Colorate.Horizontal(Colors.white_to_blue, Center.XCenter(logo)))
 print(Colorate.Color(Colors.white, Center.XCenter(info)))
-print("""
-
-------------------------------------------------------------------------------------------------------------------------""")
+print("""\n------------------------------------------------------------------------------------------------------------------------""")
 printl("info", "Loading GUI")
-root = tk.Tk()
-root.geometry("1280x720")
-root.resizable(0, 0)
-root.title("Midnight Raider | "+version)
-root.iconbitmap("./data/icon.ico")
-root.configure(bg="#baebfb")
+
+
+
 root.mainloop()
