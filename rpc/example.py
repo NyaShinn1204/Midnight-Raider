@@ -2,7 +2,10 @@ import rpc
 import time
 from time import mktime
 
+client_id = '1210561968969220218'  # Your application's client ID as a string. (This isn't a real client ID)
+rpc_obj = rpc.DiscordIpcClient.for_platform("1210561968969220218")  # Send the client ID to the rpc module
 print("RPC connection successful.")
+
 time.sleep(5)
 start_time = mktime(time.localtime())
 while True:
@@ -19,5 +22,5 @@ while True:
                 "large_image": "icon"  # must match the image key
             }
         }
-    rpc.DiscordIpcClient.for_platform("1210561968969220218").set_activity(activity)
+    rpc_obj.set_activity(activity)
     time.sleep(900)
