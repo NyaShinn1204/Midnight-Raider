@@ -54,6 +54,9 @@ root.title("Midnight Raider | "+version)
 root.iconbitmap("./data/icon.ico")
 root.configure(bg="#baebfb")
 
+def load_background():
+  ctk.CTkLabel(master=root,image=ctk.CTkImage(Image.open("./data/background-01.jpg"),size=(1280,720)),text="").pack()
+
 # Load First
 logo = f"""
                     ___  ____     _       _       _     _    ______      _     _           
@@ -72,7 +75,7 @@ print(Colorate.Horizontal(Colors.white_to_blue, Center.XCenter(logo)))
 print(Colorate.Color(Colors.white, Center.XCenter(info)))
 print("""\n------------------------------------------------------------------------------------------------------------------------""")
 printl("info", "Loading GUI")
-
+load_background()
 
 
 root.mainloop()
