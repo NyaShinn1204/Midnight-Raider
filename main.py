@@ -15,6 +15,8 @@ from customtkinter import *
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 
+import rpc.example as rpc
+
 version = "1.0.0"
 
 def printl(num, data):
@@ -76,6 +78,8 @@ print(Colorate.Color(Colors.white, Center.XCenter(info)))
 print("""\n------------------------------------------------------------------------------------------------------------------------""")
 printl("info", "Loading GUI")
 load_background()
+printl("info", "Starting RPC")
+threading.Thread(target=rpc.start).start()
 
 
 root.mainloop()
