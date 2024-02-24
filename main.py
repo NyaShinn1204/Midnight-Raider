@@ -62,7 +62,7 @@ def load_background():
 
 def module_list_frame():
   #global modulelist
-  tk.Label(root, bg="#baebfb", width=1024, height=720).place(x=0,y=0)
+  tk.Label(root, bg="#152945", width=1024, height=720).place(x=0,y=0)
   tk.Label(root, bg="#0f1314", width=32, height=720).place(x=0,y=0)
   ctk.CTkLabel(master=root,image=ctk.CTkImage(Image.open("./data/icon.png"),size=(85,85)),text="").place(x=5,y=5)
   tk.Label(root, bg="#0f1314", text="Midnight", fg="#fff", font=("Dubai Medium", 20)).place(x=100,y=0)
