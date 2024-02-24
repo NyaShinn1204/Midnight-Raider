@@ -64,8 +64,9 @@ def module_list_frame():
   #global modulelist
   tk.Label(root, bg="#baebfb", width=1024, height=720).place(x=0,y=0)
   tk.Label(root, bg="#0f1314", width=32, height=720).place(x=0,y=0)
-  ctk.CTkLabel(master=root,image=ctk.CTkImage(Image.open("./data/icon.png"),size=(80,80)),text="").place(x=5,y=5)
-  #tk.Label(root, bg="#020b1f", text="THREECOIN RAIDER", fg="#fff", font=("Carlito", 20, "bold")).place(x=5,y=25)
+  ctk.CTkLabel(master=root,image=ctk.CTkImage(Image.open("./data/icon.png"),size=(85,85)),text="").place(x=5,y=5)
+  tk.Label(root, bg="#0f1314", text="Midnight", fg="#fff", font=("Dubai Medium", 20)).place(x=100,y=0)
+  tk.Label(root, bg="#0f1314", text="Raider", fg="#fff", font=("Dubai Medium", 20)).place(x=100,y=40)
   
 #  modulelist = ctk.CTkFrame(master=root, width=230, height=720, corner_radius=0, fg_color=c4)
 #  modulelist.place(x=0,y=100)
