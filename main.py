@@ -18,6 +18,9 @@ from CTkToolTip import *
 import rpc.example as rpc
 
 version = "1.0.0"
+developer = "NyaShinn1204"
+contributors = "None"
+testers = "None"
 
 def printl(num, data):
   filename = os.path.basename(__file__)
@@ -46,6 +49,10 @@ def get_hwid():
   except:
     printl("error", "get_hwid exception error wrong")
 
+def gui_close():
+  root.destroy()
+  rpc.stop_threads = True
+
 System.Size(120, 30)
 System.Clear()
 
@@ -55,12 +62,46 @@ root.resizable(0, 0)
 root.title("Midnight Raider | "+version)
 root.iconbitmap("./data/icon.ico")
 root.configure(bg="#baebfb")
+root.protocol("WM_DELETE_WINDOW", gui_close)
 
 def load_background():
   ctk.CTkLabel(master=root,image=ctk.CTkImage(Image.open("./data/background-01.jpg"),size=(1280,720)),text="").pack()
 
+def clear_frame(frame):
+  for widget in frame.winfo_children():
+    widget.destroy()
+  frame.pack_forget()
+
 def module_scroll_frame(num1, num2):
   print("a")
+  global module_frame
+  frame_scroll = module_frame = ctk.CTkScrollableFrame(root, fg_color="#0f1314", bg_color="#152945", width=1000, height=630)
+  module_frame.place(x=245, y=70)
+  clear_frame(frame_scroll)
+  if num2 == 2:
+    if num2 == 2:
+      # About
+      credits_frame = ctk.CTkFrame(module_frame, width=940, height=400, border_width=0, corner_radius=5, fg_color="#0f1314")
+      credits_frame.grid(row=1, column=1, padx=6, pady=6)
+      tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text="Midnight Raider github:", font=("Roboto", 12)).place(x=0,y=0)
+      test = tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text="Github link", font=("Roboto", 12, "underline"))
+      test.place(x=175,y=0)
+      test.bind("<Button-1>", lambda e:webbrowser.open_new("https://github.com/NyaShinn1204/Midnight-Raider"))
+      tk.Label(credits_frame, bg="#0f1314", fg="#fff", text="Main developer and updater:", font=("Roboto", 12)).place(x=0,y=25)
+      tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text=developer, font=("Roboto", 12)).place(x=210,y=25)
+      tk.Label(credits_frame, bg="#0f1314", fg="#fff", text="Main contributors:", font=("Roboto", 12)).place(x=0,y=50)
+      tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text=contributors, font=("Roboto", 12)).place(x=137,y=50)
+      tk.Label(credits_frame, bg="#0f1314", fg="#fff", text="Main testers:", font=("Roboto", 12)).place(x=0,y=75)
+      tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text=testers, font=("Roboto", 12)).place(x=100,y=75)
+      
+      tk.Label(credits_frame, bg="#0f1314", fg="#fff", text="Respect:", font=("Roboto", 12)).place(x=0,y=125)
+      tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text="Akebi GC", font=("Roboto", 12)).place(x=15,y=145)
+      tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text="Bkebi GC", font=("Roboto", 12)).place(x=15,y=165)
+      tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text="TwoCoinRaider", font=("Roboto", 12)).place(x=15,y=185)
+      tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text="ThreeCoinRaider", font=("Roboto", 12)).place(x=15,y=206)
+      tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text="RaizouRaider", font=("Roboto", 12)).place(x=15,y=227)
+
+      printl("debug", "Open About Tab")
 
 def module_list_frame():
   #global modulelist
@@ -78,7 +119,7 @@ def module_list_frame():
   ctk.CTkButton(master=modulelist, image=ctk.CTkImage(Image.open("data/setting.png"),size=(20, 20)), compound="left", fg_color="#0f1314", hover_color="#ade3f7", corner_radius=0, text="Settings", width=195, height=40, font=("Roboto", 16, "bold"), anchor="w", command= lambda: module_scroll_frame(2, 1)).place(x=20,y=516)
   ctk.CTkButton(master=modulelist, image=ctk.CTkImage(Image.open("data/info.png"),size=(20, 20)), compound="left", fg_color="#0f1314", hover_color="#ade3f7", corner_radius=0, text="About", width=195, height=40, font=("Roboto", 16, "bold"), anchor="w", command= lambda: module_scroll_frame(2, 2)).place(x=20,y=562)
 #  
-#  credit_frame = ctk.CTkFrame(root, width=1020, height=50, fg_color=c1, bg_color=c2)
+#  credit_frame = ctk.CTkFrame(root, width=1020, height=50, fg_color=c1, bg_color="#0f1314")
 #  credit_frame.place(x=245, y=10)
 #  ctk.CTkButton(master=credit_frame, image=ctk.CTkImage(Image.open("data/link.png"),size=(20, 20)), compound="right", fg_color=c1, text_color="#fff", corner_radius=0, text="", width=20, height=20, font=set_fonts(16, None), anchor="w", command= lambda: CTkMessagebox(title="Version Info", message=f"Version: {version}\n\nDeveloper: {developer}\nTester: {testers}", width=450)).place(x=10,y=10)
 #  ctk.CTkLabel(master=credit_frame, fg_color=c1, text_color="#fff", corner_radius=0, text=lang_load_set("username")+": "+os.getlogin(), width=20, height=20, font=set_fonts(16, "bold"), anchor="w").place(x=40,y=5)
@@ -105,7 +146,7 @@ printl("info", "Loading GUI")
 #load_background()
 module_list_frame()
 printl("info", "Starting RPC")
-threading.Thread(target=rpc.start).start()
+rpc_thread = threading.Thread(target=rpc.start)
 
 0
 root.mainloop()
