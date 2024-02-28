@@ -49,6 +49,15 @@ def get_hwid():
   except:
     printl("error", "get_hwid exception error wrong")
 
+def get_plan():
+  try:
+    if get_hwid() == "BFA3C0C0-77D2-5F57-D558-663A669C1043":
+      return "Developer"
+    else:
+      return "Normal"
+  except:
+    printl("error", "get_plan exception error wrong")
+
 def gui_close():
   root.destroy()
   rpc.stop_threads = True
@@ -124,6 +133,7 @@ def module_list_frame():
   ctk.CTkButton(master=credit_frame, image=ctk.CTkImage(Image.open("data/link.png"),size=(20, 20)), compound="right", fg_color="#0a111c", text_color="#fff", corner_radius=0, text="", width=20, height=20, font=("Roboto", 16), anchor="w", command= lambda: CTkMessagebox(title="Version Info", message=f"Version: {version}\n\nDeveloper: {developer}\nTester: {testers}", width=450)).place(x=10,y=10)
   ctk.CTkLabel(master=credit_frame, fg_color="#0a111c", text_color="#fff", corner_radius=0, text="Username: "+os.getlogin(), width=20, height=20, font=("Roboto", 16, "bold"), anchor="w").place(x=40,y=5)
   ctk.CTkLabel(master=credit_frame, fg_color="#0a111c", text_color="#fff", corner_radius=0, text="Hwid: "+get_hwid(), width=20, height=20, font=("Roboto", 16, "bold"), anchor="w").place(x=40,y=25)
+  ctk.CTkLabel(master=credit_frame, fg_color="#0a111c", text_color="#fff", corner_radius=0, text="Plan: "+get_plan(), width=20, height=20, font=("Roboto", 16, "bold"), anchor="w").place(x=450,y=25)
 
 
 logo = f"""
