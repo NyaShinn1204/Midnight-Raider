@@ -20,6 +20,10 @@ import rpc.example as rpc
 # Module Import
 import module.joiner.joiner as module_joiner
 
+# Utilities Module Import
+import module.token_checker as token_checker
+import module.proxy_checker as proxy_checker
+
 version = "1.0.0"
 developer = "NyaShinn1204"
 contributors = "None"
@@ -115,6 +119,105 @@ import module.joiner.utilities.get_balance as get_balance
 
 def load_background():
   ctk.CTkLabel(master=root,image=ctk.CTkImage(Image.open("./data/background-01.jpg"),size=(1280,720)),text="").pack()
+
+# Check Config
+def check_config():
+  printl("debug", "Checking Config")
+  try:
+    if os.path.exists(r"config.json") and not json.load(open('./config.json', 'r', encoding="utf-8"))["token_path"] == "":
+      tokens = open(json.load(open('./config.json', 'r', encoding="utf-8"))["token_path"], 'r').read().splitlines()
+      Setting.tokens = []
+      Setting.validtoken = 0
+      Setting.invalidtoken = 0
+      Setting.token_filenameLabel.set(os.path.basename(json.load(open('./config.json', 'r', encoding="utf-8"))["token_path"]))
+      Setting.totaltokenLabel.set("Total: "+str(len(tokens)).zfill(3))
+      threading.Thread(target=token_checker.check(tokens, update_token)).start()
+      printl("info", "Checked Config")
+    else:
+      printl("error", "Config Not Found")
+      printl("error", "Please point to it manually.")
+      token_load()
+  except Exception as error:
+    printl("error", "Config Check Error")
+    printl("error", error)
+    token_load()
+
+# Load Token, Proxie
+# Token Tab
+def token_load():
+  filepath = filedialog.askopenfilename(filetype=[("", "*.txt")], initialdir=os.path.abspath(os.path.dirname(__file__)), title="Select Tokens")
+  if filepath == "":
+    return
+  tokens = open(filepath, 'r').read().splitlines()
+  if tokens == []:
+    return
+  data = json.load(open('config.json'))
+  data['token_path'] = filepath
+  json.dump(data, open('config.json', 'w'), indent=4)
+  printl("info", f"Set Token File {os.path.basename(filepath)}")
+  Setting.tokens = []
+  Setting.validtoken = 0
+  Setting.invalidtoken = 0
+  Setting.token_filenameLabel.set(os.path.basename(filepath))
+  Setting.validtokenLabel.set("Valid: 000")
+  Setting.invalidtokenLabel.set("Invalid: 000")
+  Setting.totaltokenLabel.set("Total: "+str(len(tokens)).zfill(3))
+  threading.Thread(target=token_checker.check(tokens, update_token)).start()
+
+def update_token(status, token):
+  if status == True:
+    Setting.tokens.append(token)
+    Setting.validtoken += 1
+    Setting.validtokenLabel.set("Valid: "+str(Setting.validtoken).zfill(3))
+  if status == False:
+    Setting.invalidtoken += 1
+    Setting.invalidtokenLabel.set("Invalid: "+str(Setting.invalidtoken).zfill(3))
+
+# Proxy Tab
+def proxy_load():
+  threading.Thread(target=proxy_main).start()
+  
+def proxy_main():
+  proxy_type = Setting.proxytype.get()
+  print(proxy_type)
+  if proxy_type == "":
+    print("[-] Cancel proxy")
+    return
+  proxy_filepath()
+
+def proxy_filepath():
+  filepath = filedialog.askopenfilename(filetype=[("", "*.txt")], initialdir=os.path.abspath(os.path.dirname(__file__)), title="Select Proxies")
+  if filepath == "":
+    return
+  proxies = open(filepath, 'r').read().splitlines()
+  if proxies == []:
+    return
+  data = json.load(open('config.json'))
+  data['proxie_path'] = filepath
+  json.dump(data, open('config.json', 'w'), indent=4)
+  printl("info", f"Set Proxie File {os.path.basename(filepath)}")
+  Setting.proxies = []
+  Setting.totalproxies = str(len(proxies))
+  Setting.vaildproxies = 0
+  Setting.invaildproxies = 0
+  Setting.proxy_filenameLabel.set(os.path.basename(filepath))
+  Setting.totalProxiesLabel.set("Total: "+Setting.totalproxies.zfill(3))
+  print("[+] Load: " + Setting.totalproxies + "Proxies")
+  time.sleep(1)
+  threading.Thread(target=proxy_checker.check(update_proxy, proxies, Setting.proxytype.get()))
+  if Setting.vaildproxies == 0:
+    printl("error","Not Found Load Vaild Proxies")
+  else:
+    printl("info","Success Load Vaild Proxies: " + str(Setting.vaildproxies))
+     
+def update_proxy(status, proxy):
+  if status == True:
+    Setting.proxies.append(proxy)
+    Setting.vaildproxies += 1
+    Setting.validProxiesLabel.set("Valid: "+str(Setting.vaildproxies).zfill(3))
+  if status == False:
+    Setting.invaildproxies += 1
+    Setting.invalidProxiesLabel.set("Invalid: "+str(Setting.invaildproxies).zfill(3))
 
 def clear_frame(frame):
   for widget in frame.winfo_children():
@@ -385,6 +488,7 @@ HWID: [{get_hwid()}]                Version: [{version}]
 print(Colorate.Horizontal(Colors.white_to_blue, Center.XCenter(logo)))
 print(Colorate.Color(Colors.white, Center.XCenter(info)))
 print("""\n------------------------------------------------------------------------------------------------------------------------""")
+check_config()
 printl("info", "Loading GUI")
 #load_background()
 module_list_frame()
