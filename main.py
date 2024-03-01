@@ -34,6 +34,13 @@ def printl(num, data):
     print(f"["+Colorate.Horizontal(Colors.white_to_blue, "Info")+"]"+f"[{filename}] " + data)
     #print(f"[{Fore.LIGHTGREEN_EX}Info{Fore.RESET}] [{filename}] " + data)
     
+def extractfi(input_str):
+  if len(input_str) >= 5:
+    replaced_str = input_str[:-5] + '*' * 5
+    return replaced_str
+  else:
+    return input_str
+  
 def get_hwid():
   try:
     if os.name == 'posix':
@@ -49,21 +56,26 @@ def get_hwid():
   except:
     printl("error", "get_hwid exception error wrong")
 
-def get_plan():
-  try:
-    if get_hwid() == "BFA3C0C0-77D2-5F57-D558-663A669C1043":
-      return "Developer"
-    else:
-      return "Normal"
-  except:
-    printl("error", "get_plan exception error wrong")
-
 def gui_close():
   root.destroy()
   rpc.stop_threads = True
 
 System.Size(120, 30)
 System.Clear()
+
+#c1 = "#0D2845"
+#c2 = "#020b1f"
+c3 = "#b4e7fa"
+#c4 = "#020b1f"
+#c5 = "#00bbe3"
+c6 = "#b4e7fa"
+#c7 = "#000117"
+#c8 = "#489ea1"
+#c9 = "#454c7f"
+#c10 = "#2D2DA0"
+#c11 = "#041432"
+#c12 = "#3a88e3"
+c13 = "#141B39"
 
 root = tk.Tk()
 root.geometry("1280x720")
@@ -72,6 +84,12 @@ root.title("Midnight Raider | "+version)
 root.iconbitmap("./data/icon.ico")
 root.configure(bg="#baebfb")
 root.protocol("WM_DELETE_WINDOW", gui_close)
+
+# Import Variable
+from data.settings import Setting, SettingVariable
+
+# Import Utilities
+import module.joiner.utilities.get_balance as get_balance
 
 def load_background():
   ctk.CTkLabel(master=root,image=ctk.CTkImage(Image.open("./data/background-01.jpg"),size=(1280,720)),text="").pack()
@@ -82,11 +100,87 @@ def clear_frame(frame):
   frame.pack_forget()
 
 def module_scroll_frame(num1, num2):
-  print("a")
   global module_frame
   frame_scroll = module_frame = ctk.CTkScrollableFrame(root, fg_color="#0f1314", bg_color="#152945", width=1000, height=630)
   module_frame.place(x=245, y=70)
   clear_frame(frame_scroll)
+  if num1 == 1:
+    if num2 == 1:
+      # Joiner
+      # Frame Number 01_01
+      def hcaptcha_select():
+        global answers, api
+        if Setting.joiner_bypasscap.get() == True:
+          answers = ctk.CTkInputDialog(text = "Select Sovler\n1, CapSolver\n2, CapMonster\n3, 2Cap\n4, Anti-Captcha").get_input()
+          if answers in ['1','2','3','4']:
+            print("[+] Select " + answers)
+            api = ctk.CTkInputDialog(text = "Input API Key").get_input()
+            if api == "":
+              print("[-] Not Set. Please Input")
+              Setting.joiner_bypasscap.set(False)
+            else:
+              print("[~] Checking API Key: " + extractfi(api))
+              if answers == "1":
+                if get_balance.get_balance_capsolver(api) == 0.0:
+                  Setting.joiner_bypasscap.set(False)
+              if answers == "2":
+                if get_balance.get_balance_capmonster(api) == 0.0:
+                  Setting.joiner_bypasscap.set(False)
+              if answers == "3":
+                if get_balance.get_balance_2cap(api) == 0.0:
+                  Setting.joiner_bypasscap.set(False)
+              if answers == "4":
+                if get_balance.get_balance_anticaptcha(api) == 0.0:
+                  Setting.joiner_bypasscap.set(False)
+          else:
+            print("[-] Not Set. Please Input")
+            Setting.joiner_bypasscap.set(False)
+
+      modules_frame01_01 = ctk.CTkFrame(module_frame, width=470, height=275, border_width=0, fg_color=c13)
+      modules_frame01_01.grid(row=0, column=0, padx=6, pady=6)
+      tk.Label(modules_frame01_01, bg=c13, fg="#fff", text="Joiner", font=("Roboto", 12, "bold")).place(x=15,y=0)
+      tk.Canvas(modules_frame01_01, bg=c6, highlightthickness=0, height=4, width=470).place(x=0, y=25)
+      
+      ctk.CTkCheckBox(modules_frame01_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, text="Bypass MemberScreen", variable=Setting.joiner_bypassms).place(x=5,y=31)
+      test = ctk.CTkLabel(modules_frame01_01, text_color="#fff", text="(?)")
+      test.place(x=170,y=31)
+      CTkToolTip(test, delay=0.5, message="Bypass the member screen when you join.") 
+      ctk.CTkCheckBox(modules_frame01_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, text="Bypass hCaptcha", variable=Setting.joiner_bypasscap, command=hcaptcha_select).place(x=5,y=55) 
+      test = ctk.CTkLabel(modules_frame01_01, text_color="#fff", text="(?)")
+      test.place(x=140,y=55)
+      CTkToolTip(test, delay=0.5, message="Automatically resolve hcaptcha")
+      ctk.CTkCheckBox(modules_frame01_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, text="Delete Join Message", variable=Setting.joiner_deletems).place(x=5,y=79)
+      test = ctk.CTkLabel(modules_frame01_01, text_color="#fff", text="(?)")
+      test.place(x=160,y=79)
+      CTkToolTip(test, delay=0.5, message="Delete the message when you join") 
+      
+      ctk.CTkButton(modules_frame01_01, text="Clear        ", fg_color=c2, hover_color=c5, width=75, height=25, command=lambda: Setting.joiner_link.set("")).place(x=5,y=109)
+      ctk.CTkEntry(modules_frame01_01, bg_color=c13, fg_color=c7, border_color=c4, text_color="#fff", width=150, height=20, textvariable=Setting.joiner_link).place(x=85,y=109)
+      tk.Label(modules_frame01_01, bg=c13, fg="#fff", text="Invite Link", font=("Roboto", 12)).place(x=240,y=107)
+      ctk.CTkButton(modules_frame01_01, text="Clear        ", fg_color=c2, hover_color=c5, width=75, height=25, command=lambda: Setting.joiner_serverid.set("")).place(x=5,y=138)
+      ctk.CTkEntry(modules_frame01_01, bg_color=c13, fg_color=c7, border_color=c4, text_color="#fff", width=150, height=20, textvariable=Setting.joiner_serverid).place(x=85,y=138)
+      tk.Label(modules_frame01_01, bg=c13, fg="#fff", text="Server ID", font=("Roboto", 12)).place(x=240,y=136)
+      test = ctk.CTkLabel(modules_frame01_01, text_color="#fff", text="(?)")
+      test.place(x=320,y=136)
+      CTkToolTip(test, delay=0.5, message="Used on the member screen, \nbut locked before the member screen is bypassed") 
+      ctk.CTkButton(modules_frame01_01, text="Clear        ", fg_color=c2, hover_color=c5, width=75, height=25, command=lambda: Setting.joiner_channelid.set("")).place(x=5,y=167)
+      ctk.CTkEntry(modules_frame01_01, bg_color=c13, fg_color=c7, border_color=c4, text_color="#fff", width=150, height=20, textvariable=Setting.joiner_channelid).place(x=85,y=167)
+      tk.Label(modules_frame01_01, bg=c13, fg="#fff", text="Channel ID", font=("Roboto", 12)).place(x=240,y=165)
+
+      CTkLabel(modules_frame01_01, text_color="#fff", text="Delay Time (s)", font=("Roboto", 15)).place(x=5,y=192)
+      def show_value01_01_01(value):
+          tooltip01_01_01.configure(message=round(value, 1))
+      test = ctk.CTkSlider(modules_frame01_01, from_=0.1, to=3.0, variable=Setting.joiner_delay, command=show_value01_01_01)
+      test.place(x=5,y=217)
+      tooltip01_01_01 = CTkToolTip(test, message=round(Setting.joiner_delay.get(), 1))
+
+      ctk.CTkButton(modules_frame01_01, text="Start", fg_color=c2, hover_color=c5, width=60, height=25, command=lambda: module_thread(1, 1, 1)).place(x=5,y=237)
+
+      tk.Label(modules_frame01_01, bg=c13, fg="#fff", text="Join Status", font=("Roboto", 12)).place(x=205,y=190)
+      tk.Label(modules_frame01_01, bg=c13, fg="#fff", textvariable=Setting.suc_joiner_Label, font=("Roboto", 12)).place(x=210,y=215)
+      tk.Label(modules_frame01_01, bg=c13, fg="#fff", textvariable=Setting.fai_joiner_Label, font=("Roboto", 12)).place(x=210,y=240)
+  
+      printl("info", "Open Join Leave Tab")
   if num2 == 2:
     if num2 == 2:
       # About
@@ -110,7 +204,7 @@ def module_scroll_frame(num1, num2):
       tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text="ThreeCoinRaider", font=("Roboto", 12)).place(x=15,y=206)
       tk.Label(credits_frame, bg="#0f1314", fg="#c9f7fe", text="RaizouRaider", font=("Roboto", 12)).place(x=15,y=227)
 
-      printl("debug", "Open About Tab")
+      printl("info", "Open About Tab")
 
 def module_list_frame():
   #global modulelist
@@ -133,7 +227,6 @@ def module_list_frame():
   ctk.CTkButton(master=credit_frame, image=ctk.CTkImage(Image.open("data/link.png"),size=(20, 20)), compound="right", fg_color="#0a111c", hover_color="#0a111c", text_color="#fff", corner_radius=0, text="", width=20, height=20, font=("Roboto", 16), anchor="w", command= lambda: CTkMessagebox(title="Version Info", message=f"Version: {version}\n\nDeveloper: {developer}\nTester: {testers}", width=450)).place(x=10,y=10)
   ctk.CTkLabel(master=credit_frame, fg_color="#0a111c", text_color="#fff", corner_radius=0, text="Username: "+os.getlogin(), width=20, height=20, font=("Roboto", 16, "bold"), anchor="w").place(x=40,y=5)
   ctk.CTkLabel(master=credit_frame, fg_color="#0a111c", text_color="#fff", corner_radius=0, text="Hwid: "+get_hwid(), width=20, height=20, font=("Roboto", 16, "bold"), anchor="w").place(x=40,y=25)
-  ctk.CTkLabel(master=credit_frame, fg_color="#0a111c", text_color="#fff", corner_radius=0, text="Plan: "+get_plan(), width=20, height=20, font=("Roboto", 16, "bold"), anchor="w").place(x=450,y=25)
 
 
 logo = f"""
@@ -158,5 +251,5 @@ module_list_frame()
 printl("info", "Starting RPC")
 rpc_thread = threading.Thread(target=rpc.start)
 
-0
+
 root.mainloop()
