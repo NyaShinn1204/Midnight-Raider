@@ -286,8 +286,8 @@ def module_scroll_frame(num1, num2):
       tk.Canvas(modules_frame10_01, bg=c6, highlightthickness=0, height=4, width=470).place(x=0, y=25)
 
       ctk.CTkButton(modules_frame10_01, text="Select File", fg_color=c2, hover_color=c5, width=75, height=25, command=lambda: token_load(), font=("Roboto", 12)).place(x=5,y=33)
-      ctk.CTkEntry(modules_frame10_01, bg_color=c13, fg_color=c7, border_color=c4, text_color="#fff", width=150, height=20, state="disabled").place(x=85,y=33)
-      ctk.CTkLabel(modules_frame10_01, bg_color=c13, fg_color=c4, text_color="#fff", text="", width=150, height=20, textvariable=Setting.token_filenameLabel).place(x=85,y=33)
+      ctk.CTkEntry(modules_frame10_01, bg_color=c13, fg_color=c7, border_color=c2, text_color="#fff", width=150, height=20, state="disabled").place(x=85,y=33)
+      ctk.CTkLabel(modules_frame10_01, bg_color=c13, fg_color=c2, text_color="#fff", text="", width=150, height=20, textvariable=Setting.token_filenameLabel).place(x=85,y=33)
       tk.Label(modules_frame10_01, bg=c13, fg="#fff", text="File Name", font=("Roboto", 12)).place(x=240,y=31)
 
       tk.Label(modules_frame10_01, bg=c13, fg="#fff", text="Status", font=("Roboto", 12)).place(x=5,y=70)
@@ -311,8 +311,8 @@ def module_scroll_frame(num1, num2):
       
       tk.Label(modules_frame10_02, bg=c13, fg="#fff", text="Socket Type", font=("Roboto", 12)).place(x=150,y=55)
       ctk.CTkButton(modules_frame10_02, text="Select File", fg_color=c2, hover_color=c5, width=75, height=25, command=lambda: proxy_load()).place(x=5,y=90)
-      ctk.CTkEntry(modules_frame10_02, bg_color=c13, fg_color=c7, border_color=c4, text_color="#fff", width=150, height=20, state="disabled").place(x=85,y=90)
-      ctk.CTkLabel(modules_frame10_02, bg_color=c13, fg_color=c4, text_color="#fff", text="", width=150, height=20, textvariable=Setting.proxy_filenameLabel).place(x=85,y=90)
+      ctk.CTkEntry(modules_frame10_02, bg_color=c13, fg_color=c7, border_color=c2, text_color="#fff", width=150, height=20, state="disabled").place(x=85,y=90)
+      ctk.CTkLabel(modules_frame10_02, bg_color=c13, fg_color=c2, text_color="#fff", text="", width=150, height=20, textvariable=Setting.proxy_filenameLabel).place(x=85,y=90)
       tk.Label(modules_frame10_02, bg=c13, fg="#fff", text="File Name", font=("Roboto", 12)).place(x=240,y=87)
     
       tk.Label(modules_frame10_02, bg=c13, fg="#fff", text="Status", font=("Roboto", 12)).place(x=5,y=120)

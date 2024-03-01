@@ -1,6 +1,5 @@
 import os
-
-import bypass.header as header
+import utilities.header as header
 from colorama import Fore
 
 pretty = Fore.LIGHTMAGENTA_EX + Fore.LIGHTCYAN_EX

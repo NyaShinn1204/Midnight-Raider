@@ -2,11 +2,11 @@ import base64
 import json
 import random
 
-import bypass.get_cookie as get_cookie
-import bypass.get_session as get_session
-import bypass.get_fingerprint as get_fingerprint
-import bypass.get_buildnum as get_buildnum
-import bypass.random_agent as random_agent
+import utilities.get_cookie as get_cookie
+import utilities.get_session as get_session
+import utilities.get_fingerprint as get_fingerprint
+import utilities.get_buildnum as get_buildnum
+import utilities.random_agent as random_agent
 
 def request_header(token):
     agent_string = random_agent.random_agent()
@@ -96,7 +96,7 @@ def request_header_fingerprint(token):
         "Authorization": token,
         "Connection": "keep-alive",
         "Content-Type": "application/json",
-        "Cookie": get_cookie.get_cookie(),
+        "Cookie": get_cookie.get_cookie(get_session),
         "Host": "discord.com",
         "Origin": "https://discord.com",
         "Pragma": "no-cache",

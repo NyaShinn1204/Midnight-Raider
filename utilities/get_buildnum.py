@@ -1,7 +1,5 @@
-import requests
 import re
-import bypass.get_session as get_session
-
+import utilities.get_session as get_session
 
 def get_buildnum():
     session = get_session.get_session()
