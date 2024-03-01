@@ -305,7 +305,7 @@ def module_scroll_frame(num1, num2):
       ctk.CTkCheckBox(modules_frame10_02, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, variable=Setting.proxy_enabled, text="Enabled").place(x=5,y=31)
       def set_socket(socks):
         Setting.proxytype.set(socks)
-      ctk.CTkOptionMenu(modules_frame10_02, height=25, corner_radius=4, values=["http", "https", "socks4", "socks5"], fg_color=c1, button_color=c1, button_hover_color=c1, dropdown_fg_color=c1, dropdown_hover_color=c12, dropdown_text_color="#fff", font=("Roboto", 12, "bold"), dropdown_font=("Roboto", 12, "bold"), command=set_socket, variable=Setting.proxytype).place(x=5,y=57)
+      ctk.CTkOptionMenu(modules_frame10_02, height=25, corner_radius=4, values=["http", "https", "socks4", "socks5"], fg_color="#0a111c", button_color="#0a111c", button_hover_color="#0a111c", dropdown_fg_color="#0a111c", dropdown_hover_color=c13, dropdown_text_color="#fff", font=("Roboto", 12, "bold"), dropdown_font=("Roboto", 12, "bold"), command=set_socket, variable=Setting.proxytype).place(x=5,y=57)
       
 
       
@@ -321,7 +321,7 @@ def module_scroll_frame(num1, num2):
       tk.Label(modules_frame10_02, bg=c13, fg="#fff", text="Invalid: 000", font=("Roboto", 12), textvariable=Setting.invalidProxiesLabel).place(x=10,y=185)
    
       
-      printl("debug", "Open Setting Tab")
+      printl("info", "Open Setting Tab")
     if num2 == 2:
       # About
       credits_frame = ctk.CTkFrame(module_frame, width=940, height=400, border_width=0, corner_radius=5, fg_color="#0f1314")
