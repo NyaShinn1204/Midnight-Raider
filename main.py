@@ -63,13 +63,15 @@ def gui_close():
 System.Size(120, 30)
 System.Clear()
 
+# c2, c5, c7, c4
+
 #c1 = "#0D2845"
-#c2 = "#020b1f"
+c2 = "#020b1f"
 c3 = "#b4e7fa"
 #c4 = "#020b1f"
-#c5 = "#00bbe3"
+c5 = "#00bbe3"
 c6 = "#b4e7fa"
-#c7 = "#000117"
+c7 = "#000117"
 #c8 = "#489ea1"
 #c9 = "#454c7f"
 #c10 = "#2D2DA0"
@@ -98,6 +100,79 @@ def clear_frame(frame):
   for widget in frame.winfo_children():
     widget.destroy()
   frame.pack_forget()
+
+def module_thread(num1, num2, num3):
+  tokens = Setting.tokens
+  proxies = Setting.proxies
+  proxytype = Setting.proxytype.get()
+  proxysetting = Setting.proxy_enabled.get()
+  delay = 0.1
+  mentions = 20
+  
+  if num1 == 1:
+    if num2 == 1:
+      if num3 == 1:
+        serverid = str(Setting.joiner_serverid.get())
+        join_channelid = str(Setting.joiner_channelid.get())
+        invitelink = str(Setting.joiner_link.get())
+        memberscreen = Setting.joiner_bypassms.get()
+        delete_joinms = Setting.joiner_deletems.get()
+        bypasscaptcha = Setting.joiner_bypasscap.get()
+    
+        delay = Setting.joiner_delay.get()
+    
+        answers = None
+        api = None
+    
+        if invitelink == "":
+          print("[-] InviteLink is not set")
+          return
+        if invitelink.__contains__('discord.gg/'):
+          invitelink = invitelink.replace('discord.gg/', '').replace('https://', '').replace('http://', '')
+        elif invitelink.__contains__('discord.com/invite/'):
+          invitelink = invitelink.replace('discord.com/invite/', '').replace('https://', '').replace('http://', '')
+        try:
+          invitelink = invitelink.split(".gg/")[1]
+        except:
+          pass
+        if memberscreen == True:
+          if serverid == "":
+            print("[-] ServerID is not set")
+          else:
+            print("[-] このオプションは非推奨です")
+        if bypasscaptcha == True:
+          if answers == "":
+            print("[-] Please Select API Service")
+            return
+          else:
+            if api == "":
+              print("[-] Please Input API Keys")
+        if delete_joinms == True:
+          if join_channelid == "":
+            print("[-] Join ChannelID is not set")
+            return
+        
+        if get_invite(invitelink) == 404:
+          printl("error", "This invite code not found")
+          return  
+        
+        threading.Thread(target=module_joiner.start, args=(tokens, serverid, invitelink, memberscreen, delay, module_status, answers, api, bypasscaptcha, delete_joinms, join_channelid)).start()
+
+def module_status(num1, num2, num3):
+  if num1 == 1:
+    if num2 == 1:
+      if num3 == 1:
+        SettingVariable.joinerresult_success +=1
+        Setting.suc_joiner_Label.set("Success: "+str(SettingVariable.joinerresult_success).zfill(3))
+      if num3 == 2:
+        SettingVariable.joinerresult_failed +=1
+        Setting.fai_joiner_Label.set("Failed: "+str(SettingVariable.joinerresult_failed).zfill(3))
+  if num1 == 2:
+    if num2 == 1:
+      if num3 == 1:
+        print("2-1-1")
+      if num3 == 2:
+        print("2-1-2")
 
 def module_scroll_frame(num1, num2):
   global module_frame
@@ -155,16 +230,16 @@ def module_scroll_frame(num1, num2):
       CTkToolTip(test, delay=0.5, message="Delete the message when you join") 
       
       ctk.CTkButton(modules_frame01_01, text="Clear        ", fg_color=c2, hover_color=c5, width=75, height=25, command=lambda: Setting.joiner_link.set("")).place(x=5,y=109)
-      ctk.CTkEntry(modules_frame01_01, bg_color=c13, fg_color=c7, border_color=c4, text_color="#fff", width=150, height=20, textvariable=Setting.joiner_link).place(x=85,y=109)
+      ctk.CTkEntry(modules_frame01_01, bg_color=c13, fg_color=c7, border_color=c2, text_color="#fff", width=150, height=20, textvariable=Setting.joiner_link).place(x=85,y=109)
       tk.Label(modules_frame01_01, bg=c13, fg="#fff", text="Invite Link", font=("Roboto", 12)).place(x=240,y=107)
       ctk.CTkButton(modules_frame01_01, text="Clear        ", fg_color=c2, hover_color=c5, width=75, height=25, command=lambda: Setting.joiner_serverid.set("")).place(x=5,y=138)
-      ctk.CTkEntry(modules_frame01_01, bg_color=c13, fg_color=c7, border_color=c4, text_color="#fff", width=150, height=20, textvariable=Setting.joiner_serverid).place(x=85,y=138)
+      ctk.CTkEntry(modules_frame01_01, bg_color=c13, fg_color=c7, border_color=c2, text_color="#fff", width=150, height=20, textvariable=Setting.joiner_serverid).place(x=85,y=138)
       tk.Label(modules_frame01_01, bg=c13, fg="#fff", text="Server ID", font=("Roboto", 12)).place(x=240,y=136)
       test = ctk.CTkLabel(modules_frame01_01, text_color="#fff", text="(?)")
       test.place(x=320,y=136)
       CTkToolTip(test, delay=0.5, message="Used on the member screen, \nbut locked before the member screen is bypassed") 
       ctk.CTkButton(modules_frame01_01, text="Clear        ", fg_color=c2, hover_color=c5, width=75, height=25, command=lambda: Setting.joiner_channelid.set("")).place(x=5,y=167)
-      ctk.CTkEntry(modules_frame01_01, bg_color=c13, fg_color=c7, border_color=c4, text_color="#fff", width=150, height=20, textvariable=Setting.joiner_channelid).place(x=85,y=167)
+      ctk.CTkEntry(modules_frame01_01, bg_color=c13, fg_color=c7, border_color=c2, text_color="#fff", width=150, height=20, textvariable=Setting.joiner_channelid).place(x=85,y=167)
       tk.Label(modules_frame01_01, bg=c13, fg="#fff", text="Channel ID", font=("Roboto", 12)).place(x=240,y=165)
 
       CTkLabel(modules_frame01_01, text_color="#fff", text="Delay Time (s)", font=("Roboto", 15)).place(x=5,y=192)
