@@ -17,6 +17,9 @@ from CTkToolTip import *
 
 import rpc.example as rpc
 
+# Module Import
+import module.joiner.joiner as module_joiner
+
 version = "1.0.0"
 developer = "NyaShinn1204"
 contributors = "None"
@@ -55,6 +58,23 @@ def get_hwid():
       return uuid
   except:
     printl("error", "get_hwid exception error wrong")
+
+def get_invite(invite):
+  try:
+    x = requests.get(f"https://discord.com/api/v9/invites/{invite}?with_counts=true&with_expiration=true")
+    if x.status_code == 200:
+      verify_level = x.json()["guild"]["vverification_level"]
+      if verify_level == 1:
+        printl("info", "Only Email Verify members")
+      if verify_level == 2:
+        printl("info", "Only members who have been on the server for 5 minutes")
+      if verify_level == 3:
+        printl("info", "Only members who have been on the server for 10 minutes")
+      if verify_level == 4:
+        printl("info", "Only Phone Verify members")
+    return x.status_code
+  except:
+    printl("error", "get_invite error wrong")
 
 def gui_close():
   root.destroy()
