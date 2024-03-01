@@ -122,7 +122,7 @@ def load_background():
 
 # Check Config
 def check_config():
-  printl("debug", "Checking Config")
+  printl("info", "Checking Config")
   try:
     if os.path.exists(r"config.json") and not json.load(open('./config.json', 'r', encoding="utf-8"))["token_path"] == "":
       tokens = open(json.load(open('./config.json', 'r', encoding="utf-8"))["token_path"], 'r').read().splitlines()
