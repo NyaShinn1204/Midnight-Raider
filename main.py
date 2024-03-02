@@ -488,12 +488,12 @@ HWID: [{get_hwid()}]                Version: [{version}]
 print(Colorate.Horizontal(Colors.white_to_blue, Center.XCenter(logo)))
 print(Colorate.Color(Colors.white, Center.XCenter(info)))
 print("""\n------------------------------------------------------------------------------------------------------------------------""")
-check_config()
 printl("info", "Loading GUI")
 #load_background()
+check_config()
 module_list_frame()
 printl("info", "Starting RPC")
-rpc_thread = threading.Thread(target=rpc.start)
+rpc_thread = threading.Thread(target=rpc.start).start()
 
 
 root.mainloop()
