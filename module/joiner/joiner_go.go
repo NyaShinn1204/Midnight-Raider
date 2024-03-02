@@ -375,7 +375,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 	fmt.Println(deleteJoinMs)
 	fmt.Println(joinChannelID)
 	// JSON形式の文字列に変換
-	jsonData, err := json.MarshalIndent(requestHeader("Token", false, false), "", "    ")
+	jsonData, err := json.MarshalIndent(requestHeader(token, false, false), "", "    ")
 	if err != nil {
 		fmt.Println("Error marshalling JSON:", err)
 		return
