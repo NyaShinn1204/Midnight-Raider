@@ -374,7 +374,15 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 	fmt.Println(bypassCaptcha)
 	fmt.Println(deleteJoinMs)
 	fmt.Println(joinChannelID)
-	fmt.Println(requestHeader("Token", false, false))
+	// JSON形式の文字列に変換
+	jsonData, err := json.MarshalIndent(requestHeader("Token", false, false), "", "    ")
+	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
+		return
+	}
+
+	fmt.Println(string(jsonData))
+	//fmt.Println(requestHeader("Token", false, false))
 }
 
 func deleteJoinMsg(token, joinChannelID string) {
