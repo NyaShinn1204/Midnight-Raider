@@ -423,6 +423,39 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 	fmt.Println(bypassCaptcha)
 	fmt.Println(deleteJoinMs)
 	fmt.Println(joinChannelID)
+	if serverid != "None" {
+		// HTTP GETリクエストを送信してレスポンスを取得
+		resp, err := http.Get(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", inviteLink))
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer resp.Body.Close()
+
+		// レスポンスのステータスコードを確認
+		if resp.StatusCode != http.StatusOK {
+			fmt.Println("Server returned non-OK status: %d", resp.StatusCode)
+		}
+
+		// JSONデコードしてマップに変換
+		var data map[string]interface{}
+		err = json.NewDecoder(resp.Body).Decode(&data)
+		//if err != nil {
+		//	return nil, err
+		//}
+		// HTTPリクエストを送信してレスポンスを取得
+		//data, err := sendRequest("your_invite_code_here")
+		if err != nil {
+			log.Fatalf("Failed to send request: %v", err)
+		}
+
+		// "guild_id"キーが存在するか確認し、存在する場合はその値を取得
+		serverID, ok := data["guild_id"].(string)
+		if !ok {
+			log.Fatal("Server ID not found or not a string")
+		}
+
+		fmt.Println("Server ID:", serverID)
+	}
 	// JSON形式の文字列に変換
 	// お試しjson show
 	//jsonData, err := json.MarshalIndent(requestHeader(token, false, false), "", "    ")
@@ -496,22 +529,35 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 				log.Fatalf("Failed to encode payload: %v", err)
 			}
 			// HTTPリクエスト作成
-			req, err := http.NewRequest("POST", fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink), bytes.NewBuffer(encode_payload))
+			newreq, err := http.NewRequest("POST", fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink), bytes.NewBuffer(encode_payload))
 			if err != nil {
 				log.Fatalf("Failed to create request: %v", err)
 			}
 
 			// リクエストヘッダー設定
 			for key, value := range headers {
-				req.Header.Set(key, value)
+				newreq.Header.Set(key, value)
 			}
 
 			// リクエスト送信
-			joinreq, err := session.Do(req)
+			newresponse, err := session.Do(newreq)
 			if err != nil {
 				log.Fatalf("Failed to send request: %v", err)
 			}
-			fmt.Println(joinreq.StatusCode)
+			fmt.Println(newresponse.StatusCode)
+			defer newresponse.Body.Close()
+
+			// レスポンスボディをバイト配列に読み込む
+			body, err := ioutil.ReadAll(newresponse.Body)
+			if err != nil {
+				log.Fatalf("Failed to read response body: %v", err)
+			}
+
+			// レスポンスボディをJSONとしてパース
+			var jsonResponse map[string]interface{}
+			if err := json.Unmarshal(body, &jsonResponse); err != nil {
+				log.Fatalf("Failed to parse response body: %v", err)
+			}
 			//defer joinreq.Body.Close()
 			//joinreq, err = client.R().
 			//	SetHeaders(headers).
@@ -522,29 +568,42 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 			//}
 		} else {
 			payload := map[string]interface{}{
-				"captcha_key": nil,
+				"captcha_key": "",
 			}
 			encode_payload, err := json.Marshal(payload)
 			if err != nil {
 				log.Fatalf("Failed to encode payload: %v", err)
 			}
 			// HTTPリクエスト作成
-			req, err := http.NewRequest("POST", fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink), bytes.NewBuffer(encode_payload))
+			newreq, err := http.NewRequest("POST", fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink), bytes.NewBuffer(encode_payload))
 			if err != nil {
 				log.Fatalf("Failed to create request: %v", err)
 			}
 
 			// リクエストヘッダー設定
 			for key, value := range headers {
-				req.Header.Set(key, value)
+				newreq.Header.Set(key, value)
 			}
 
 			// リクエスト送信
-			joinreq, err := session.Do(req)
+			newresponse, err := session.Do(newreq)
 			if err != nil {
 				log.Fatalf("Failed to send request: %v", err)
 			}
-			fmt.Println(joinreq.StatusCode)
+			fmt.Println(newresponse.StatusCode)
+			defer newresponse.Body.Close()
+
+			// レスポンスボディをバイト配列に読み込む
+			body, err := ioutil.ReadAll(newresponse.Body)
+			if err != nil {
+				log.Fatalf("Failed to read response body: %v", err)
+			}
+
+			// レスポンスボディをJSONとしてパース
+			var jsonResponse map[string]interface{}
+			if err := json.Unmarshal(body, &jsonResponse); err != nil {
+				log.Fatalf("Failed to parse response body: %v", err)
+			}
 			//defer joinreq.Body.Close()
 			//joinreq, err = client.R().
 			//	SetHeaders(headers).
@@ -696,3 +755,5 @@ func readTokensFromFile(filename string) []string {
 
 	return strings.Fields(string(content))
 }
+
+// Check Status
