@@ -506,6 +506,8 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 		log.Fatalf("Failed to read response body: %v", err)
 	}
 
+	//fmt.Println(joinreq.Body)
+
 	// レスポンスボディをJSONとしてパース
 	var jsonResponse map[string]interface{}
 	if err := json.Unmarshal(body, &jsonResponse); err != nil {
@@ -642,6 +644,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 			}
 		}
 	} else if joinreq.StatusCode == 200 {
+		fmt.Println(joinreq.StatusCode)
 		if _, ok := jsonResponse["captcha_key"]; !ok {
 			if _, ok := jsonResponse["You need to verify your account in order to perform this action."]; ok {
 				fmt.Printf("認証が必要です | %s\n", extractToken)
