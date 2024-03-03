@@ -2,11 +2,14 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -31,6 +34,7 @@ var joinchannelid string
 var sleepDuration time.Duration
 
 func main() {
+	// token_file serverid invitelink memberscreen delay bypasscaptcha answers apikey deletejoinmsg joinchannelid
 	args := os.Args[1:]
 	token_file = args[0]
 	serverid = args[1]
@@ -92,6 +96,14 @@ func start(tokens []string, serverID, inviteLink string, memberScreen string, an
 		go joinerThread(token, serverID, inviteLink, memberScreen, answers, apis, bypassCaptcha, deleteJoinMs, joinChannelID)
 		time.Sleep(sleepDuration)
 	}
+}
+
+// ユーティリティー関係ここに置くかも 知らんけど
+func extract(formatToken string) string {
+	if match, _ := regexp.MatchString(`(.+):`, formatToken); match {
+		return strings.Split(formatToken, ":")[1]
+	}
+	return formatToken
 }
 
 // Headers関係はここに置くかも しらんけど
@@ -363,6 +375,43 @@ func requestHeader(token string, includeFingerprint, includeCookie bool) map[str
 	return headers
 }
 
+func getSession() *http.Client {
+	tlsConfig := &tls.Config{
+		MinVersion:               tls.VersionTLS12,                            // 最低限のTLSバージョン
+		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384}, // 楕円曲線の選択
+		PreferServerCipherSuites: true,                                        // サーバーが使用する暗号スイートを優先する
+		CipherSuites: []uint16{
+			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, // 暗号スイートの指定
+			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+		},
+		// 証明書の検証関連の設定
+		//RootCAs:            certPool, // ルート証明書を検証するCAリスト
+		//InsecureSkipVerify: false,    // サーバー証明書の検証をスキップするかどうか
+		//// その他の設定
+		//ClientAuth: tls.NoClientCert, // クライアント証明書の要求
+		//ServerName: "example.com",    // サーバー名
+	}
+
+	transport := &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}
+
+	return &http.Client{
+		Transport: transport,
+	}
+}
+
+func solver(answers string, token string, url string, sitekey string, apikey string) string {
+	fmt.Println(answers)
+	fmt.Println(token)
+	fmt.Println(url)
+	fmt.Println(sitekey)
+	fmt.Println(apikey)
+	return "aiueo1425"
+}
+
+//solver(answers, token, "https://discord.com", joinreq.JSON().(map[string]interface{})["captcha_sitekey"].(string), apis
+
 func joinerThread(token, serverID, inviteLink string, memberScreen string, answers string, apis string, bypassCaptcha string, deleteJoinMs string, joinChannelID string) {
 	// 必要な処理を実装
 	fmt.Println(token)
@@ -375,17 +424,254 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 	fmt.Println(deleteJoinMs)
 	fmt.Println(joinChannelID)
 	// JSON形式の文字列に変換
-	jsonData, err := json.MarshalIndent(requestHeader(token, false, false), "", "    ")
-	if err != nil {
-		fmt.Println("Error marshalling JSON:", err)
-		return
-	}
-	fmt.Println(string(jsonData))
+	// お試しjson show
+	//jsonData, err := json.MarshalIndent(requestHeader(token, false, false), "", "    ")
+	//if err != nil {
+	//	fmt.Println("Error marshalling JSON:", err)
+	//	return
+	//}
+	//fmt.Println(string(jsonData))
+
 	//fmt.Println(requestHeader("Token", false, false))
+
+	extractToken := fmt.Sprintf("%s.%s", strings.Split(extract(token+"]"), ".")[0], strings.Split(extract(token+"]"), ".")[1])
+
+	session := getSession()
+	reqHeader := requestHeader(token, true, true)
+	headers := reqHeader
+
+	//client := session
+
+	//joinreq, err := client.Post(fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink), "", nil)
+	//if err != nil {
+	//		log.Fatalf("Failed to send join request: %v", err)
+	//}
+
+	// HTTPリクエスト作成
+	req, err := http.NewRequest("POST", fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink), nil)
+	if err != nil {
+		log.Fatalf("Failed to create request: %v", err)
+	}
+
+	// リクエストヘッダー設定
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+
+	// リクエスト送信
+	joinreq, err := session.Do(req)
+	if err != nil {
+		log.Fatalf("Failed to send request: %v", err)
+	}
+	//defer joinreq.Body.Close()
+
+	defer joinreq.Body.Close()
+
+	// レスポンスボディをバイト配列に読み込む
+	body, err := ioutil.ReadAll(joinreq.Body)
+	if err != nil {
+		log.Fatalf("Failed to read response body: %v", err)
+	}
+
+	// レスポンスボディをJSONとしてパース
+	var jsonResponse map[string]interface{}
+	if err := json.Unmarshal(body, &jsonResponse); err != nil {
+		log.Fatalf("Failed to parse response body: %v", err)
+	}
+
+	fmt.Println(joinreq.StatusCode)
+	if joinreq.StatusCode == 400 {
+		if bypassCaptcha == "True" {
+			fmt.Printf("Solving Captcha | %s\n", extractToken)
+			// jsonResponse["captcha_sitekey"]が文字列型であることを確認し、型アサーションを行う
+			captchaSiteKey, ok := jsonResponse["captcha_sitekey"].(string)
+			if !ok {
+				log.Fatalf("Failed to assert captcha_sitekey as string")
+			}
+			payload := map[string]interface{}{
+				"captcha_key": solver(answers, token, "https://discord.com", captchaSiteKey, apis),
+			}
+			encode_payload, err := json.Marshal(payload)
+			if err != nil {
+				log.Fatalf("Failed to encode payload: %v", err)
+			}
+			// HTTPリクエスト作成
+			req, err := http.NewRequest("POST", fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink), bytes.NewBuffer(encode_payload))
+			if err != nil {
+				log.Fatalf("Failed to create request: %v", err)
+			}
+
+			// リクエストヘッダー設定
+			for key, value := range headers {
+				req.Header.Set(key, value)
+			}
+
+			// リクエスト送信
+			joinreq, err := session.Do(req)
+			if err != nil {
+				log.Fatalf("Failed to send request: %v", err)
+			}
+			fmt.Println(joinreq.StatusCode)
+			//defer joinreq.Body.Close()
+			//joinreq, err = client.R().
+			//	SetHeaders(headers).
+			//	SetJSON(payload).
+			//	Post(fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink))
+			//if err != nil {
+			//	log.Fatalf("Failed to send join request: %v", err)
+			//}
+		} else {
+			payload := map[string]interface{}{
+				"captcha_key": nil,
+			}
+			encode_payload, err := json.Marshal(payload)
+			if err != nil {
+				log.Fatalf("Failed to encode payload: %v", err)
+			}
+			// HTTPリクエスト作成
+			req, err := http.NewRequest("POST", fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink), bytes.NewBuffer(encode_payload))
+			if err != nil {
+				log.Fatalf("Failed to create request: %v", err)
+			}
+
+			// リクエストヘッダー設定
+			for key, value := range headers {
+				req.Header.Set(key, value)
+			}
+
+			// リクエスト送信
+			joinreq, err := session.Do(req)
+			if err != nil {
+				log.Fatalf("Failed to send request: %v", err)
+			}
+			fmt.Println(joinreq.StatusCode)
+			//defer joinreq.Body.Close()
+			//joinreq, err = client.R().
+			//	SetHeaders(headers).
+			//	SetJSON(payload).
+			//	Post(fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink))
+			if err != nil {
+				log.Fatalf("Failed to send join request: %v", err)
+			}
+		}
+		if joinreq.StatusCode == 200 {
+			if _, ok := jsonResponse["captcha_key"]; !ok {
+				if _, ok := jsonResponse["You need to verify your account in order to perform this action."]; ok {
+					fmt.Printf("認証が必要です | %s\n", extractToken)
+					fmt.Println("失敗しました")
+				}
+				fmt.Printf("Successfully Token Join | %s\n", extractToken)
+				if deleteJoinMs == "True" {
+					fmt.Printf("Deleting Join Message | %s\n", extractToken)
+					deleteJoinMsg(token, joinChannelID)
+				}
+				fmt.Println("成功しました")
+			}
+			//if memberScreen {
+			//	acceptRulesBypass(token, joinreq.JSON(), serverID, inviteLink)
+			//}
+			//if changeNick {
+			//	changeNicker(token, serverID, nickname)
+			//}
+		} else {
+			if _, ok := jsonResponse["captcha_key"]; ok {
+				fmt.Printf("Failed Token Join (Captcha Wrong) | %s\n", extractToken)
+				fmt.Println(jsonResponse)
+				fmt.Println("失敗しました")
+			} else {
+				fmt.Printf("Failed Captcha Bypass | %s | %s\n", extractToken, strings.ReplaceAll(string(body), "\n", ""))
+			}
+		}
+	} else if joinreq.StatusCode == 200 {
+		if _, ok := jsonResponse["captcha_key"]; !ok {
+			if _, ok := jsonResponse["You need to verify your account in order to perform this action."]; ok {
+				fmt.Printf("認証が必要です | %s\n", extractToken)
+				fmt.Println("失敗しました")
+			}
+			fmt.Printf("Successfully Token Join | %s\n", extractToken)
+			if deleteJoinMs == "True" {
+				fmt.Printf("Deleting Join Message | %s\n", extractToken)
+				deleteJoinMsg(token, joinChannelID)
+			}
+			fmt.Println("成功しました")
+		}
+		//if memberScreen {
+		//	acceptRulesBypass(token, joinreq.JSON(), serverID, inviteLink)
+		//}
+		//if changeNick {
+		//	changeNicker(token, serverID, nickname)
+		//}
+	} else if joinreq.StatusCode == 403 {
+		if strings.Contains(string(body), "You need to verify your account in order to perform this action.") ||
+			strings.Contains(string(body), "このユーザーは、このギルドからBANされています。") ||
+			strings.Contains(string(body), "The user is banned from this guild.") {
+			fmt.Printf("Banned from Server | %s\n", extractToken)
+			//fmt.Println("失敗しました")
+		}
+	}
 }
 
 func deleteJoinMsg(token, joinChannelID string) {
-	// 処理を記述
+	extractToken := fmt.Sprintf("%s.%s", strings.Split(extract(token+"]"), ".")[0], strings.Split(extract(token+"]"), ".")[1])
+	reqHeader := requestHeader(token, false, false)
+	headers := reqHeader
+
+	client := http.Client{}
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://discord.com/api/v9/channels/%s/messages?limit=100", joinChannelID), nil)
+	if err != nil {
+		log.Fatalf("Failed to create request: %v", err)
+	}
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("Failed to fetch messages: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("Failed to read response body: %v", err)
+	}
+
+	var messages []map[string]interface{}
+	if err := json.Unmarshal(body, &messages); err != nil {
+		log.Fatalf("Failed to parse response: %v", err)
+	}
+
+	for _, message := range messages {
+		botTokenID, err := base64.StdEncoding.DecodeString(strings.Split(token, ".")[0] + "==")
+		if err != nil {
+			log.Fatalf("Failed to decode bot token ID: %v", err)
+		}
+		if message["content"] == "" && string(botTokenID) == message["author"].(map[string]interface{})["id"].(string) {
+			req, err := http.NewRequest("DELETE", fmt.Sprintf("https://discord.com/api/v9/channels/%s/messages/%s", joinChannelID, message["id"].(string)), nil)
+			if err != nil {
+				log.Fatalf("Failed to create request: %v", err)
+			}
+			for key, value := range headers {
+				req.Header.Set(key, value)
+			}
+
+			resp, err := client.Do(req)
+			if err != nil {
+				log.Fatalf("Failed to delete join message: %v", err)
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode == http.StatusNoContent {
+				fmt.Printf("Success Delete Join Message: %s\n", extractToken)
+			} else {
+				fmt.Printf("Failed Delete Join Message: %s\n", extractToken)
+				body, _ := ioutil.ReadAll(resp.Body)
+				fmt.Println(string(body))
+			}
+			break
+		}
+	}
 }
 
 // 他の関数やモジュールの実装
