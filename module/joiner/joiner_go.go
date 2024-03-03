@@ -38,9 +38,6 @@ func main() {
 	memberscreen = args[3]
 	delay_str = args[4]
 	delay, err := strconv.ParseFloat(delay_str, 64)
-	if err != nil {
-		// エラー処理
-	}
 
 	// delayが整数かどうかをチェックし、整数の場合は秒単位に変換
 	if delay == float64(int(delay)) {
@@ -100,20 +97,23 @@ func start(tokens []string, serverID, inviteLink string, memberScreen string, an
 // Headers関係はここに置くかも しらんけど
 
 func randomAgent() string {
-	agents := []string{
-		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36",
-		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15_7; rv:92.0) Gecko/20100101 Firefox/92.0",
-		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
-		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36",
-		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36 Edg/93.0.961.52",
-		"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/37.0.2062.94 Chrome/37.0.2062.94 Safari/537.36",
-		"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36",
-		"Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko",
-		"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0",
-		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/8.0.8 Safari/600.8.9",
+	// ファイルを読み込み
+	content, err := ioutil.ReadFile("user-agent.txt")
+	if err != nil {
+		fmt.Println("Error reading file:", err)
+		return "" // エラーが発生した場合、空の文字列を返す
 	}
+
+	// ファイルの内容を改行で分割し、agentsスライスに追加
+	lines := strings.Split(string(content), "\n")
+
+	// キャリッジリターンをトリム
+	for i := range lines {
+		lines[i] = strings.TrimSpace(lines[i])
+	}
+
 	rand.Seed(time.Now().UnixNano())
-	return agents[rand.Intn(len(agents))]
+	return lines[rand.Intn(len(lines))]
 }
 
 func getBuildnum() (int, error) {
@@ -380,7 +380,6 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 		fmt.Println("Error marshalling JSON:", err)
 		return
 	}
-
 	fmt.Println(string(jsonData))
 	//fmt.Println(requestHeader("Token", false, false))
 }
