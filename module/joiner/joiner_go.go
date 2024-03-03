@@ -433,7 +433,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 
 		// レスポンスのステータスコードを確認
 		if resp.StatusCode != http.StatusOK {
-			fmt.Println("Server returned non-OK status: %d", resp.StatusCode)
+			fmt.Println(fmt.Sprintf("Server returned non-OK status: %d", resp.StatusCode))
 		}
 
 		// JSONデコードしてマップに変換
