@@ -439,10 +439,12 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 	if useproxy == "True" {
 		proxy := getRandomProxy(proxie_file)
 		session = getSession(true, proxy)
+		fmt.Println("Running on Proxie:", proxy)
 	} else {
 		session = getSession(false, nil)
 	}
-	if serverid != "None" {
+	// 招待リンクからServeridを取得するコード
+	if serverid == "None" {
 		// HTTP GETリクエストを送信してレスポンスを取得
 		resp, err := http.Get(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", inviteLink))
 		if err != nil {
@@ -565,8 +567,8 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 			if err != nil {
 				log.Fatalf("Failed to send request: %v", err)
 			}
-			fmt.Println(newresponse.StatusCode)
 			defer newresponse.Body.Close()
+			fmt.Println(newresponse.StatusCode)
 
 			// レスポンスボディをバイト配列に読み込む
 			body, err := ioutil.ReadAll(newresponse.Body)
@@ -611,8 +613,8 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 			if err != nil {
 				log.Fatalf("Failed to send request: %v", err)
 			}
-			fmt.Println(newresponse.StatusCode)
 			defer newresponse.Body.Close()
+			fmt.Println(newresponse.StatusCode)
 
 			// レスポンスボディをバイト配列に読み込む
 			body, err := ioutil.ReadAll(newresponse.Body)

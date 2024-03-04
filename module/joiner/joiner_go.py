@@ -12,7 +12,7 @@ def start(token_file, proxie_file, serverid, invitelink, memberscreen, delay, by
     print("Starting the process.")
     print(delay)
     command = ['go', 'run', 'joiner_go.go', f'{token_file}', serverid, invitelink, memberscreen, f'{delay}', bypasscaptcha, answers, apikey, deletejoinmsg, joinchannelid, useproxy, f'{proxie_file}']
-    #go run joiner_go.go C:/Users/Shin/Desktop/Data/GitHub/ThreeCoinRaider/module/spam/token_sample.txt 1197528360776126526 AdbCyyYN False 3 False None None False None True C:/Users/Shin/Desktop/Data/GitHub/ThreeCoinRaider/module/spam/proxie-lol.txt
+    #go run joiner_go.go C:/Users/Shin/Desktop/Data/GitHub/ThreeCoinRaider/module/spam/token_sample.txt 1197528360776126526 r33We25Z False 3 False None None False None True C:/Users/Shin/Desktop/Data/GitHub/ThreeCoinRaider/module/spam/proxie-lol.txt
     #// token_file serverid invitelink memberscreen delay bypasscaptcha answers apikey deletejoinmsg joinchannelid useproxy proxy_file
     print(command)
     process = subprocess.Popen(command, stdout=subprocess.PIPE, text=True, cwd=r"./module/spam/")
