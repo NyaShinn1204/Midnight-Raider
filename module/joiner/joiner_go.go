@@ -12,6 +12,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -42,6 +43,8 @@ func main() {
 	memberscreen = args[3]
 	delay_str = args[4]
 	delay, err := strconv.ParseFloat(delay_str, 64)
+	useproxy := args[5]
+	proxie_file := args[6]
 
 	// delayが整数かどうかをチェックし、整数の場合は秒単位に変換
 	if delay == float64(int(delay)) {
@@ -88,12 +91,12 @@ func main() {
 		return
 	}
 
-	start(tokens, serverid, invitelink, memberscreen, answers, apikey, bypasscaptcha, deletejoinmsg, joinchannelid)
+	start(tokens, serverid, invitelink, memberscreen, answers, apikey, bypasscaptcha, deletejoinmsg, joinchannelid, useproxy, proxie_file)
 }
 
-func start(tokens []string, serverID, inviteLink string, memberScreen string, answers string, apis string, bypassCaptcha string, deleteJoinMs string, joinChannelID string) {
+func start(tokens []string, serverID, inviteLink string, memberScreen string, answers string, apis string, bypassCaptcha string, deleteJoinMs string, joinChannelID string, useproxy string, proxie_file string) {
 	for _, token := range tokens {
-		go joinerThread(token, serverID, inviteLink, memberScreen, answers, apis, bypassCaptcha, deleteJoinMs, joinChannelID)
+		go joinerThread(token, serverID, inviteLink, memberScreen, answers, apis, bypassCaptcha, deleteJoinMs, joinChannelID, useproxy, proxie_file)
 		time.Sleep(sleepDuration)
 	}
 }
@@ -375,7 +378,9 @@ func requestHeader(token string, includeFingerprint, includeCookie bool) map[str
 	return headers
 }
 
-func getSession() *http.Client {
+func getSession(useproxies bool, proxyurl *url.URL) *http.Client {
+	var transport *http.Transport
+
 	tlsConfig := &tls.Config{
 		MinVersion:               tls.VersionTLS12,                            // 最低限のTLSバージョン
 		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384}, // 楕円曲線の選択
@@ -392,8 +397,15 @@ func getSession() *http.Client {
 		//ServerName: "example.com",    // サーバー名
 	}
 
-	transport := &http.Transport{
-		TLSClientConfig: tlsConfig,
+	if useproxies {
+		transport = &http.Transport{
+			TLSClientConfig: tlsConfig,
+			Proxy:           http.ProxyURL(proxyurl),
+		}
+	} else {
+		transport = &http.Transport{
+			TLSClientConfig: tlsConfig,
+		}
 	}
 
 	return &http.Client{
@@ -412,7 +424,8 @@ func solver(answers string, token string, url string, sitekey string, apikey str
 
 //solver(answers, token, "https://discord.com", joinreq.JSON().(map[string]interface{})["captcha_sitekey"].(string), apis
 
-func joinerThread(token, serverID, inviteLink string, memberScreen string, answers string, apis string, bypassCaptcha string, deleteJoinMs string, joinChannelID string) {
+func joinerThread(token, serverID, inviteLink string, memberScreen string, answers string, apis string, bypassCaptcha string, deleteJoinMs string, joinChannelID string, useproxy string, proxie_file string) {
+	var session *http.Client
 	// 必要な処理を実装
 	fmt.Println(token)
 	fmt.Println(serverID)
@@ -423,6 +436,12 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 	fmt.Println(bypassCaptcha)
 	fmt.Println(deleteJoinMs)
 	fmt.Println(joinChannelID)
+	if useproxy == "True" {
+		proxy := getRandomProxy(proxie_file)
+		session = getSession(true, proxy)
+	} else {
+		session = getSession(false, nil)
+	}
 	if serverid != "None" {
 		// HTTP GETリクエストを送信してレスポンスを取得
 		resp, err := http.Get(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", inviteLink))
@@ -469,7 +488,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 
 	extractToken := fmt.Sprintf("%s.%s", strings.Split(extract(token+"]"), ".")[0], strings.Split(extract(token+"]"), ".")[1])
 
-	session := getSession()
+	//session := getSession(true,)
 	reqHeader := requestHeader(token, true, true)
 	headers := reqHeader
 
@@ -759,4 +778,38 @@ func readTokensFromFile(filename string) []string {
 	return strings.Fields(string(content))
 }
 
-// Check Status
+func getRandomProxy(filepath string) *url.URL {
+	proxies := readProxiesFromFile(filepath)
+	if len(proxies) == 0 {
+		fmt.Println("No proxies found in proxies.txt")
+		return nil
+	}
+
+	rand.Seed(time.Now().UnixNano())
+	return proxies[rand.Intn(len(proxies))]
+}
+
+func readProxiesFromFile(filename string) []*url.URL {
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Println("Error reading file:", err)
+		return nil
+	}
+
+	lines := strings.Split(string(content), "\n")
+	var proxyList []*url.URL
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line != "" {
+			proxyURL, err := url.Parse("http://" + line)
+			if err != nil {
+				fmt.Println("Error parsing proxy URL:", err)
+			} else {
+				proxyList = append(proxyList, proxyURL)
+			}
+		}
+	}
+
+	return proxyList
+}
