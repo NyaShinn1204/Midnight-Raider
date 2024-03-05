@@ -96,7 +96,7 @@ def request_header_fingerprint(token):
         "Authorization": token,
         "Connection": "keep-alive",
         "Content-Type": "application/json",
-        "Cookie": get_cookie.get_cookie(get_session),
+        "Cookie": get_cookie.get_cookie(),
         "Host": "discord.com",
         "Origin": "https://discord.com",
         "Pragma": "no-cache",

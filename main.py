@@ -19,6 +19,7 @@ import rpc.example as rpc
 
 # Module Import
 import module.joiner.joiner as module_joiner
+import module.joiner.joiner_go as module_joiner_go
 
 # Utilities Module Import
 import module.token_checker as token_checker
@@ -230,7 +231,8 @@ def module_thread(num1, num2, num3):
   proxytype = Setting.proxytype.get()
   proxysetting = Setting.proxy_enabled.get()
   delay = 0.1
-  
+  token_file = json.load(open('./config.json', 'r', encoding="utf-8"))["token_path"]
+  proxie_file = json.load(open('./config.json', 'r', encoding="utf-8"))["proxie_path"]
   if num1 == 1:
     if num2 == 1:
       if num3 == 1:
@@ -240,6 +242,7 @@ def module_thread(num1, num2, num3):
         memberscreen = Setting.joiner_bypassms.get()
         delete_joinms = Setting.joiner_deletems.get()
         bypasscaptcha = Setting.joiner_bypasscap.get()
+        gomode = Setting.joiner_gomode.get()
     
         delay = Setting.joiner_delay.get()
     
@@ -278,6 +281,9 @@ def module_thread(num1, num2, num3):
           printl("error", "This invite code not found")
           return  
         
+        if gomode == True:
+          threading.Thread(target=module_joiner_go.start, args=(token_file, proxie_file, serverid, invitelink, memberscreen, delay, bypasscaptcha, answers, api, delete_joinms, join_channelid, proxysetting, module_status)).start()
+
         threading.Thread(target=module_joiner.start, args=(tokens, serverid, invitelink, memberscreen, delay, module_status, answers, api, bypasscaptcha, delete_joinms, join_channelid)).start()
 
 def module_status(num1, num2, num3):
@@ -308,7 +314,7 @@ def module_scroll_frame(num1, num2):
       def hcaptcha_select():
         global answers, api
         if Setting.joiner_bypasscap.get() == True:
-          answers = ctk.CTkInputDialog(text = "Select Sovler\n1, CapSolver\n2, CapMonster\n3, 2Cap\n4, Anti-Captcha").get_input()
+          answers = ctk.CTkInputDialog(text = "Select Sovler\n1, CapSolver\n2, CapMonster\n3, 2Cap\n4, Anti-Captcha\n5, None Mode").get_input()
           if answers in ['1','2','3','4']:
             print("[+] Select " + answers)
             api = ctk.CTkInputDialog(text = "Input API Key").get_input()
@@ -329,6 +335,8 @@ def module_scroll_frame(num1, num2):
               if answers == "4":
                 if get_balance.get_balance_anticaptcha(api) == 0.0:
                   Setting.joiner_bypasscap.set(False)
+              if answers == "5":
+                Setting.joiner_bypasscap.set(False)
           else:
             print("[-] Not Set. Please Input")
             Setting.joiner_bypasscap.set(False)
@@ -350,6 +358,10 @@ def module_scroll_frame(num1, num2):
       test = ctk.CTkLabel(modules_frame01_01, text_color="#fff", text="(?)")
       test.place(x=160,y=79)
       CTkToolTip(test, delay=0.5, message="Delete the message when you join") 
+      ctk.CTkCheckBox(modules_frame01_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, text="Go Mode", variable=Setting.joiner_gomode).place(x=200,y=31)
+      test = ctk.CTkLabel(modules_frame01_01, text_color="#fff", text="(?)")
+      test.place(x=280,y=31)
+      CTkToolTip(test, delay=0.5, message="Use golang mode.") 
       
       ctk.CTkButton(modules_frame01_01, text="Clear        ", fg_color=c2, hover_color=c5, width=75, height=25, command=lambda: Setting.joiner_link.set("")).place(x=5,y=109)
       ctk.CTkEntry(modules_frame01_01, bg_color=c13, fg_color=c7, border_color=c2, text_color="#fff", width=150, height=20, textvariable=Setting.joiner_link).place(x=85,y=109)
@@ -493,7 +505,7 @@ printl("info", "Loading GUI")
 check_config()
 module_list_frame()
 printl("info", "Starting RPC")
-rpc_thread = threading.Thread(target=rpc.start).start()
+rpc_thread = threading.Thread(target=rpc.start)
 
 
 root.mainloop()
