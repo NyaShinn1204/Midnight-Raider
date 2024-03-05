@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -43,8 +42,6 @@ func main() {
 	memberscreen = args[3]
 	delay_str = args[4]
 	delay, err := strconv.ParseFloat(delay_str, 64)
-	useproxy := args[5]
-	proxie_file := args[6]
 
 	// delayが整数かどうかをチェックし、整数の場合は秒単位に変換
 	if delay == float64(int(delay)) {
@@ -61,6 +58,9 @@ func main() {
 	apikey = args[7]
 	deletejoinmsg = args[8]
 	joinchannelid = args[9]
+
+	useproxy := args[10]
+	proxie_file := args[11]
 
 	if err != nil {
 		fmt.Println("変換に失敗しました:", err)
@@ -378,33 +378,89 @@ func requestHeader(token string, includeFingerprint, includeCookie bool) map[str
 	return headers
 }
 
+func checkproxy(proxyurl *url.URL) int {
+	// コマンドラインフラグの定義
+	//urlFlag := flag.String("url", "", "URL to test")
+	//proxyFlag := flag.String("proxy", "", "Proxy URL")
+	//flag.Parse()
+
+	//	// URLとプロキシが指定されているかを確認
+	//	if *urlFlag == "" {
+	//		fmt.Println("Please provide a URL to test using -url flag")
+	//		os.Exit(1)
+	//	}
+	//
+	// プロキシをURLオブジェクトにパース
+	//proxyURL, err := url.Parse(proxyurl)
+	//if err != nil {
+	//	fmt.Println("Error parsing proxy URL:", err)
+	//	os.Exit(1)
+	//}
+
+	// プロキシを使用してHTTPクライアントを作成
+	client := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(proxyurl),
+		},
+	}
+
+	// 指定されたURLにGETリクエストを送信
+	resp, err := client.Get("http://example.com")
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		os.Exit(1)
+	}
+	defer resp.Body.Close()
+
+	// ステータスコードの確認
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("Unexpected status code:", resp.StatusCode)
+		os.Exit(1)
+	}
+
+	// レスポンスの読み取り
+	//body, err := ioutil.ReadAll(resp.Body)
+	//if err != nil {
+	//	fmt.Println("Error reading response:", err)
+	//	os.Exit(1)
+	//}
+
+	// レスポンスの表示
+	//fmt.Println("Response:", resp.StatusCode)
+	//fmt.Println(resp.StatusCode)
+	return resp.StatusCode
+}
+
 func getSession(useproxies bool, proxyurl *url.URL) *http.Client {
 	var transport *http.Transport
 
-	tlsConfig := &tls.Config{
-		MinVersion:               tls.VersionTLS12,                            // 最低限のTLSバージョン
-		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384}, // 楕円曲線の選択
-		PreferServerCipherSuites: true,                                        // サーバーが使用する暗号スイートを優先する
-		CipherSuites: []uint16{
-			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, // 暗号スイートの指定
-			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-		},
-		// 証明書の検証関連の設定
-		//RootCAs:            certPool, // ルート証明書を検証するCAリスト
-		//InsecureSkipVerify: false,    // サーバー証明書の検証をスキップするかどうか
-		//// その他の設定
-		//ClientAuth: tls.NoClientCert, // クライアント証明書の要求
-		//ServerName: "example.com",    // サーバー名
-	}
-
+	//tlsConfig := &tls.Config{
+	//	MinVersion:               tls.VersionTLS12,                            // 最低限のTLSバージョン
+	//	CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384}, // 楕円曲線の選択
+	//	PreferServerCipherSuites: true,                                        // サーバーが使用する暗号スイートを優先する
+	//	CipherSuites: []uint16{
+	//		tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, // 暗号スイートの指定
+	//		tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+	//	},
+	//	// 証明書の検証関連の設定
+	//	//RootCAs:            certPool, // ルート証明書を検証するCAリスト
+	//	//InsecureSkipVerify: false,    // サーバー証明書の検証をスキップするかどうか
+	//	//// その他の設定
+	//	//ClientAuth: tls.NoClientCert, // クライアント証明書の要求
+	//	//ServerName: "example.com",    // サーバー名
+	//}
+	//proxyURL, err := url.Parse("http://tbkzktta:de8si82ghq2y@154.95.36.199:6893")
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
 	if useproxies {
 		transport = &http.Transport{
-			TLSClientConfig: tlsConfig,
-			Proxy:           http.ProxyURL(proxyurl),
+			//TLSClientConfig: tlsConfig,
+			Proxy: http.ProxyURL(proxyurl),
 		}
 	} else {
 		transport = &http.Transport{
-			TLSClientConfig: tlsConfig,
+			//	TLSClientConfig: tlsConfig,
 		}
 	}
 
@@ -436,46 +492,42 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 	fmt.Println(bypassCaptcha)
 	fmt.Println(deleteJoinMs)
 	fmt.Println(joinChannelID)
+	fmt.Println("Use Proxy?", useproxy)
 	if useproxy == "True" {
 		proxy := getRandomProxy(proxie_file)
 		session = getSession(true, proxy)
 		fmt.Println("Running on Proxie:", proxy)
+		fmt.Println("Check proxie Status code:", checkproxy(proxy))
 	} else {
 		session = getSession(false, nil)
 	}
 	// 招待リンクからServeridを取得するコード
 	if serverid == "None" {
 		// HTTP GETリクエストを送信してレスポンスを取得
-		resp, err := http.Get(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", inviteLink))
+		//fmt.Println(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", inviteLink))
+		resp, err := session.Get(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", inviteLink))
 		if err != nil {
 			fmt.Println(err)
 		}
 		defer resp.Body.Close()
-
+		fmt.Println(resp.StatusCode)
 		// レスポンスのステータスコードを確認
 		if resp.StatusCode != http.StatusOK {
 			fmt.Println(fmt.Sprintf("Server returned non-OK status: %d", resp.StatusCode))
 		}
-
 		// JSONデコードしてマップに変換
 		var data map[string]interface{}
-		err = json.NewDecoder(resp.Body).Decode(&data)
-		//if err != nil {
-		//	return nil, err
-		//}
-		// HTTPリクエストを送信してレスポンスを取得
-		//data, err := sendRequest("your_invite_code_here")
-		if err != nil {
-			log.Fatalf("Failed to send request: %v", err)
+		if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+			fmt.Println("Error decoding JSON:", err)
 		}
 
 		// "guild_id"キーが存在するか確認し、存在する場合はその値を取得
-		serverID, ok := data["guild_id"].(string)
-		if !ok {
-			log.Fatal("Server ID not found or not a string")
+		if serverID, ok := data["guild_id"].(string); ok {
+			fmt.Println("Server ID:", serverID)
+		} else {
+			fmt.Println("Server ID not found or not a string")
 		}
 
-		fmt.Println("Server ID:", serverID)
 	}
 	// JSON形式の文字列に変換
 	// お試しjson show
@@ -536,6 +588,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 	}
 
 	fmt.Println(joinreq.StatusCode)
+
 	if joinreq.StatusCode == 400 {
 		if bypassCaptcha == "True" {
 			fmt.Printf("Solving Captcha | %s\n", extractToken)
