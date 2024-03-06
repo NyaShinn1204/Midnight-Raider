@@ -15,8 +15,6 @@ from customtkinter import *
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import *
 
-import rpc.example as rpc
-
 # Module Import
 import module.joiner.joiner as module_joiner
 import module.joiner.joiner_go as module_joiner_go
@@ -83,7 +81,9 @@ def get_invite(invite):
 
 def gui_close():
   root.destroy()
-  rpc.stop_threads = True
+  if rpc_thread.poll() is None:
+    rpc_thread.terminate()
+  #rpc.stop_threads = True
 
 System.Size(120, 30)
 System.Clear()
@@ -505,7 +505,7 @@ printl("info", "Loading GUI")
 check_config()
 module_list_frame()
 printl("info", "Starting RPC")
-rpc_thread = threading.Thread(target=rpc.start)
+rpc_thread = subprocess.Popen(['python', 'example.py'], stdout=subprocess.PIPE, text=True, cwd=r"./rpc/")
 
 
 root.mainloop()

@@ -1,8 +1,6 @@
-import rpc.rpc as rpc
+import rpc as rpc
 import time 
 from time import mktime
-
-stop_threads = False
 
 def start():
     client_id = '1210561968969220218'  # Your application's client ID as a string. (This isn't a real client ID)
@@ -26,7 +24,6 @@ def start():
                 }
             }
         rpc_obj.set_activity(activity)
-        global stop_threads
-        if stop_threads:
-            break
         time.sleep(900)
+        
+start()
