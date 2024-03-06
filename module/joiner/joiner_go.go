@@ -475,7 +475,7 @@ func solver(answers string, token string, url string, sitekey string, apikey str
 	fmt.Println(url)
 	fmt.Println(sitekey)
 	fmt.Println(apikey)
-	return "aiueo1425"
+	return ""
 }
 
 //solver(answers, token, "https://discord.com", joinreq.JSON().(map[string]interface{})["captcha_sitekey"].(string), apis
