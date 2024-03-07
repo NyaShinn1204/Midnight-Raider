@@ -33,10 +33,6 @@ func main() {
 	response := checktoken(token)
 	if response == 200 {
 		log.Printf("[VALID]   %v [%v]\n", token, response)
-	}
-	if response == 403 {
-		log.Printf("[LOCKED]  %v [%v]\n", token, response)
-		os.Exit(1)
 	} else {
 		log.Printf("[INVALID] %v [%v]", token, response)
 		os.Exit(1)
