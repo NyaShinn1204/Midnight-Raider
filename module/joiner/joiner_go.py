@@ -32,8 +32,8 @@ def monitor_process(module_status, invitelink):
         print(output)
         if output:
             matches = re.findall(r'\b\d+\b', output)
-            if matches:
-                channelid = matches[0]
+            #if matches:
+            #    channelid = matches[0]
             if '200' in output:
                 print(f"[+] 参加に成功しました Invite: {invitelink}")
                 module_status(1, 1, 1)

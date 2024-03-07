@@ -98,7 +98,8 @@ class Setting:
   nmspam_ratefixer.set(False)
   nmspam_randomconvert = tk.BooleanVar()
   nmspam_randomconvert.set(False)
-  
+  nmspam_gomode = tk.BooleanVar()
+  nmspam_gomode.set(False)
   nmspam_serverid = tk.StringVar()
   nmspam_serverid.set("")
   nmspam_channelid = tk.StringVar()

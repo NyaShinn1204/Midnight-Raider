@@ -18,6 +18,8 @@ from CTkToolTip import *
 # Module Import
 import module.joiner.joiner as module_joiner
 import module.joiner.joiner_go as module_joiner_go
+import module.spammer.spammer as module_normal_spammer
+import module.spammer.spammer_go as module_spammer_go
 
 # Utilities Module Import
 import module.token_checker as token_checker
@@ -235,56 +237,90 @@ def module_thread(num1, num2, num3):
   proxie_file = json.load(open('./config.json', 'r', encoding="utf-8"))["proxie_path"]
   if num1 == 1:
     if num2 == 1:
-      if num3 == 1:
-        serverid = str(Setting.joiner_serverid.get())
-        join_channelid = str(Setting.joiner_channelid.get())
-        invitelink = str(Setting.joiner_link.get())
-        memberscreen = Setting.joiner_bypassms.get()
-        delete_joinms = Setting.joiner_deletems.get()
-        bypasscaptcha = Setting.joiner_bypasscap.get()
-        gomode = Setting.joiner_gomode.get()
-    
-        delay = Setting.joiner_delay.get()
-    
-        answers = None
-        api = None
-    
-        if invitelink == "":
-          print("[-] InviteLink is not set")
+      serverid = str(Setting.joiner_serverid.get())
+      join_channelid = str(Setting.joiner_channelid.get())
+      invitelink = str(Setting.joiner_link.get())
+      memberscreen = Setting.joiner_bypassms.get()
+      delete_joinms = Setting.joiner_deletems.get()
+      bypasscaptcha = Setting.joiner_bypasscap.get()
+      gomode = Setting.joiner_gomode.get()
+  
+      delay = Setting.joiner_delay.get()
+  
+      answers = None
+      api = None
+  
+      if invitelink == "":
+        print("[-] InviteLink is not set")
+        return
+      if invitelink.__contains__('discord.gg/'):
+        invitelink = invitelink.replace('discord.gg/', '').replace('https://', '').replace('http://', '')
+      elif invitelink.__contains__('discord.com/invite/'):
+        invitelink = invitelink.replace('discord.com/invite/', '').replace('https://', '').replace('http://', '')
+      try:
+        invitelink = invitelink.split(".gg/")[1]
+      except:
+        pass
+      if memberscreen == True:
+        if serverid == "":
+          print("[-] ServerID is not set")
+        else:
+          print("[-] このオプションは非推奨です")
+      if bypasscaptcha == True:
+        if answers == "":
+          print("[-] Please Select API Service")
           return
-        if invitelink.__contains__('discord.gg/'):
-          invitelink = invitelink.replace('discord.gg/', '').replace('https://', '').replace('http://', '')
-        elif invitelink.__contains__('discord.com/invite/'):
-          invitelink = invitelink.replace('discord.com/invite/', '').replace('https://', '').replace('http://', '')
-        try:
-          invitelink = invitelink.split(".gg/")[1]
-        except:
-          pass
-        if memberscreen == True:
-          if serverid == "":
-            print("[-] ServerID is not set")
-          else:
-            print("[-] このオプションは非推奨です")
-        if bypasscaptcha == True:
-          if answers == "":
-            print("[-] Please Select API Service")
-            return
-          else:
-            if api == "":
-              print("[-] Please Input API Keys")
-        if delete_joinms == True:
-          if join_channelid == "":
-            print("[-] Join ChannelID is not set")
-            return
-        
-        if get_invite(invitelink) == 404:
-          printl("error", "This invite code not found")
-          return  
-        
+        else:
+          if api == "":
+            print("[-] Please Input API Keys")
+      if delete_joinms == True:
+        if join_channelid == "":
+          print("[-] Join ChannelID is not set")
+          return
+      
+      if get_invite(invitelink) == 404:
+        printl("error", "This invite code not found")
+        return  
+      if num3 == 1:
         if gomode == True:
           threading.Thread(target=module_joiner_go.start, args=(token_file, proxie_file, serverid, invitelink, memberscreen, delay, bypasscaptcha, answers, api, delete_joinms, join_channelid, proxysetting, module_status)).start()
 
         threading.Thread(target=module_joiner.start, args=(tokens, serverid, invitelink, memberscreen, delay, module_status, answers, api, bypasscaptcha, delete_joinms, join_channelid)).start()
+
+  if num1 == 2:
+    if num2 == 1:
+      serverid = str(Setting.nmspam_serverid.get())
+      channelid = str(Setting.nmspam_channelid.get())
+      allchannel = Setting.nmspam_allch.get()
+      allping = Setting.nmspam_allping.get()
+      randomstring = Setting.nmspam_rdstring.get()
+      ratelimit = Setting.nmspam_ratefixer.get()
+      randomconvert = Setting.nmspam_randomconvert.get()
+      gomode = Setting.nmspam_gomode.get()
+  
+      contents = nmspam_message.get("0.0","end-1c")
+      mentions = Setting.nmspam_mention.get()
+  
+      delay = Setting.nmspam_delay.get()
+        
+      if serverid == "":
+        print("[-] ServerID is not set")
+        return
+      if channelid == "":
+        print("[-] ChannelID is not set")
+        return    
+  
+      if num3 == 1:      
+        if gomode == True:
+          print("gomode")
+
+        threading.Thread(target=module_normal_spammer.start, args=(delay, tokens, module_status, proxysetting, proxies, proxytype, serverid, channelid, contents, allchannel, allping, mentions, randomstring, ratelimit, randomconvert)).start()
+
+      if num3 == 2:
+        if gomode == True:
+          print("gomode")
+
+        threading.Thread(target=module_normal_spammer.stop).start()
 
 def module_status(num1, num2, num3):
   if num1 == 1:
@@ -298,12 +334,15 @@ def module_status(num1, num2, num3):
   if num1 == 2:
     if num2 == 1:
       if num3 == 1:
-        print("2-1-1")
+        SettingVariable.nmspamresult_success +=1
+        Setting.suc_nmspam_Label.set("Success: "+str(SettingVariable.nmspamresult_success).zfill(3))
       if num3 == 2:
-        print("2-1-2")
+        SettingVariable.nmspamresult_failed +=1
+        Setting.fai_nmspam_Label.set("Failed: "+str(SettingVariable.nmspamresult_failed).zfill(3))
 
 def module_scroll_frame(num1, num2):
   global module_frame
+  global nmspam_message
   frame_scroll = module_frame = ctk.CTkScrollableFrame(root, fg_color="#0f1314", bg_color="#152945", width=1000, height=630)
   module_frame.place(x=245, y=70)
   clear_frame(frame_scroll)
@@ -342,8 +381,9 @@ def module_scroll_frame(num1, num2):
             Setting.joiner_bypasscap.set(False)
             
       def memberscreen_set():
-        CTkMessagebox(title="Info", message=f"This version can not use\nBypass MemberScreen!!", width=450)
+        CTkMessagebox(title="Info", message=f"This version can not use\nBypass MemberScreen", width=450)
         Setting.joiner_bypassms.set(False)
+        
       modules_frame01_01 = ctk.CTkFrame(module_frame, width=470, height=275, border_width=0, fg_color=c13)
       modules_frame01_01.grid(row=0, column=0, padx=6, pady=6)
       tk.Label(modules_frame01_01, bg=c13, fg="#fff", text="Joiner", font=("Roboto", 12, "bold")).place(x=15,y=0)
@@ -364,7 +404,7 @@ def module_scroll_frame(num1, num2):
       ctk.CTkCheckBox(modules_frame01_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, text="Go Mode", variable=Setting.joiner_gomode).place(x=200,y=31)
       test = ctk.CTkLabel(modules_frame01_01, text_color="#fff", text="(?)")
       test.place(x=280,y=31)
-      CTkToolTip(test, delay=0.5, message="Use golang mode.") 
+      CTkToolTip(test, delay=0.5, message="Use Golang mode.") 
       
       ctk.CTkButton(modules_frame01_01, text="Clear        ", fg_color=c2, hover_color=c5, width=75, height=25, command=lambda: Setting.joiner_link.set("")).place(x=5,y=109)
       ctk.CTkEntry(modules_frame01_01, bg_color=c13, fg_color=c7, border_color=c2, text_color="#fff", width=150, height=20, textvariable=Setting.joiner_link).place(x=85,y=109)
@@ -393,6 +433,74 @@ def module_scroll_frame(num1, num2):
       tk.Label(modules_frame01_01, bg=c13, fg="#fff", textvariable=Setting.fai_joiner_Label, font=("Roboto", 12)).place(x=210,y=240)
   
       printl("info", "Open Join Leave Tab")
+      
+    if num2 == 2:
+      # Spammer
+      # Frame Numnber 02_01
+      modules_frame02_01 = ctk.CTkFrame(module_frame, width=470, height=300, border_width=0, fg_color=c13)
+      modules_frame02_01.grid(row=0, column=0, padx=6, pady=6)  
+      tk.Label(modules_frame02_01, bg=c13, fg="#fff", text="Spammer", font=("Roboto", 12, "bold")).place(x=15,y=0)
+      tk.Canvas(modules_frame02_01, bg=c6, highlightthickness=0, height=4, width=470).place(x=0, y=25)
+
+      ctk.CTkCheckBox(modules_frame02_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, variable=Setting.nmspam_allping, text="All Ping").place(x=5,y=30)
+      test = ctk.CTkLabel(modules_frame02_01, text_color="#fff", text="(?)")
+      test.place(x=80,y=30)
+      CTkToolTip(test, delay=0.5, message="Add a Mention to a random user to the message to be spammed") 
+      ctk.CTkCheckBox(modules_frame02_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, variable=Setting.nmspam_allch, text="All Ch").place(x=5,y=52)
+      test = ctk.CTkLabel(modules_frame02_01, text_color="#fff", text="(?)")
+      test.place(x=70,y=52)
+      CTkToolTip(test, delay=0.5, message="Randomly select channels to send message") 
+      ctk.CTkCheckBox(modules_frame02_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, variable=Setting.nmspam_rdstring, text="Random String").place(x=5,y=74)
+      test = ctk.CTkLabel(modules_frame02_01, text_color="#fff", text="(?)")
+      test.place(x=120,y=74)
+      CTkToolTip(test, delay=0.5, message="Adds a random string to the message") 
+      ctk.CTkCheckBox(modules_frame02_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, variable=Setting.nmspam_ratefixer, text="RateLimitFixer").place(x=5,y=96)
+      test = ctk.CTkLabel(modules_frame02_01, text_color="#fff", text="(?)")
+      test.place(x=120,y=96)
+      CTkToolTip(test, delay=0.5, message="Wait a few seconds if the rate limit is reached")
+      ctk.CTkCheckBox(modules_frame02_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, variable=Setting.nmspam_randomconvert, text="RandomConvert").place(x=5,y=118)
+      test = ctk.CTkLabel(modules_frame02_01, text_color="#fff", text="(?)")
+      test.place(x=125,y=118)
+      CTkToolTip(test, delay=0.5, message="Convert messages to random")
+      ctk.CTkCheckBox(modules_frame02_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, variable=Setting.nmspam_gomode, text="Go Mode").place(x=100,y=31)
+      test = ctk.CTkLabel(modules_frame02_01, text_color="#fff", text="(?)")
+      test.place(x=180,y=31)
+      CTkToolTip(test, delay=0.5, message="Use Golang mode.") 
+      
+      ctk.CTkButton(modules_frame02_01, text="Clear        ", fg_color=c2, hover_color=c5, width=75, height=25).place(x=5,y=146)
+      ctk.CTkEntry(modules_frame02_01, bg_color=c13, fg_color=c7, border_color=c2, text_color="#fff", width=150, height=20, textvariable=Setting.nmspam_serverid).place(x=85,y=146)
+      tk.Label(modules_frame02_01, bg=c13, fg="#fff", text="Server ID", font=("Roboto", 12)).place(x=240,y=144)
+      ctk.CTkButton(modules_frame02_01, text="Clear        ", fg_color=c2, hover_color=c5, width=75, height=25).place(x=5,y=175)
+      ctk.CTkEntry(modules_frame02_01, bg_color=c13, fg_color=c7, border_color=c2, text_color="#fff", width=150, height=20, textvariable=Setting.nmspam_channelid).place(x=85,y=175)
+      tk.Label(modules_frame02_01, bg=c13, fg="#fff", text="Channel ID", font=("Roboto", 12)).place(x=240,y=173)
+
+
+      CTkLabel(modules_frame02_01, text_color="#fff", text="Delay Time (s)", font=("Roboto", 15)).place(x=5,y=197)
+      def show_value02_01_01(value):
+          tooltip02_01_01.configure(message=round(value, 1))
+      test = ctk.CTkSlider(modules_frame02_01, from_=0.1, to=3.0, variable=Setting.nmspam_delay, command=show_value02_01_01)
+      test.place(x=5,y=222)
+      tooltip02_01_01 = CTkToolTip(test, message=round(Setting.nmspam_delay.get(), 1))
+
+      CTkLabel(modules_frame02_01, text_color="#fff", text="Mention Count (s)", font=("Roboto", 15)).place(x=225,y=237)
+      def show_value02_01_02(value):
+          tooltip02_01_02.configure(message=round(value))
+      test = ctk.CTkSlider(modules_frame02_01, from_=3, to=50, variable=Setting.nmspam_mention, command=show_value02_01_02)
+      test.place(x=225,y=262)
+      tooltip02_01_02 = CTkToolTip(test, message=round(Setting.nmspam_mention.get()))
+
+      
+      tk.Label(modules_frame02_01, bg=c13, fg="#fff", text="Message", font=("Roboto", 12)).place(x=200,y=30)
+      nmspam_message = ctk.CTkTextbox(modules_frame02_01, bg_color=c13, fg_color=c7, text_color="#fff", width=250, height=75)
+      nmspam_message.place(x=200,y=55)
+        
+      ctk.CTkButton(modules_frame02_01, text="Start", fg_color="#00051e", hover_color=c5, border_width=1, border_color="#00051e", width=60, height=25, command=lambda: module_thread(2, 1, 1)).place(x=5,y=245)
+      ctk.CTkButton(modules_frame02_01, text="Stop", fg_color="#00051e", hover_color=c5, border_width=1, border_color="#00051e", width=60, height=25, command=lambda: module_thread(2, 1, 2)).place(x=70,y=245)
+
+      tk.Label(modules_frame02_01, bg=c13, fg="#fff", text="Status", font=("Roboto", 12)).place(x=330,y=144)
+      tk.Label(modules_frame02_01, bg=c13, fg="#fff", textvariable=Setting.suc_nmspam_Label, font=("Roboto", 12)).place(x=335,y=169)
+      tk.Label(modules_frame02_01, bg=c13, fg="#fff", textvariable=Setting.fai_nmspam_Label, font=("Roboto", 12)).place(x=335,y=194)
+
   if num1 == 2:
     if num2 == 1:
       # Setting
@@ -476,7 +584,7 @@ def module_list_frame():
   modulelist.place(x=0,y=100)
   tk.Canvas(bg="#0a111e", highlightthickness=0, height=2080, width=4).place(x=230, y=0)
   ctk.CTkButton(master=modulelist, image=ctk.CTkImage(Image.open("data/join_leave.png"),size=(20, 20)), compound="left", fg_color="#0f1314", hover_color="#ade3f7", corner_radius=0, text="Joiner / Leaver", width=195, height=40, font=("Roboto", 16, "bold"), anchor="w", command= lambda: module_scroll_frame(1, 1)).place(x=20,y=12)
-  #ctk.CTkButton(master=modulelist, image=ctk.CTkImage(Image.open("data/spammer.png"),size=(20, 20)), compound="left", fg_color="#0f1314", hover_color="#ade3f7", corner_radius=0, text=lang_load_set("spammer"), width=195, height=40, font=("Roboto", 16, "bold"), anchor="w", command= lambda: module_scroll_frame(1, 2)).place(x=20,y=57)
+  ctk.CTkButton(master=modulelist, image=ctk.CTkImage(Image.open("data/spammer.png"),size=(20, 20)), compound="left", fg_color="#0f1314", hover_color="#ade3f7", corner_radius=0, text="Spammer", width=195, height=40, font=("Roboto", 16, "bold"), anchor="w", command= lambda: module_scroll_frame(1, 2)).place(x=20,y=57)
   ctk.CTkButton(master=modulelist, image=ctk.CTkImage(Image.open("data/setting.png"),size=(20, 20)), compound="left", fg_color="#0f1314", hover_color="#ade3f7", corner_radius=0, text="Settings", width=195, height=40, font=("Roboto", 16, "bold"), anchor="w", command= lambda: module_scroll_frame(2, 1)).place(x=20,y=516)
   ctk.CTkButton(master=modulelist, image=ctk.CTkImage(Image.open("data/info.png"),size=(20, 20)), compound="left", fg_color="#0f1314", hover_color="#ade3f7", corner_radius=0, text="About", width=195, height=40, font=("Roboto", 16, "bold"), anchor="w", command= lambda: module_scroll_frame(2, 2)).place(x=20,y=562)
   
