@@ -340,13 +340,16 @@ def module_scroll_frame(num1, num2):
           else:
             print("[-] Not Set. Please Input")
             Setting.joiner_bypasscap.set(False)
-
+            
+      def memberscreen_set():
+        CTkMessagebox(title="Info", message=f"This version can not use\nBypass MemberScreen!!", width=450)
+        Setting.joiner_bypassms.set(False)
       modules_frame01_01 = ctk.CTkFrame(module_frame, width=470, height=275, border_width=0, fg_color=c13)
       modules_frame01_01.grid(row=0, column=0, padx=6, pady=6)
       tk.Label(modules_frame01_01, bg=c13, fg="#fff", text="Joiner", font=("Roboto", 12, "bold")).place(x=15,y=0)
       tk.Canvas(modules_frame01_01, bg=c6, highlightthickness=0, height=4, width=470).place(x=0, y=25)
       
-      ctk.CTkCheckBox(modules_frame01_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, text="Bypass MemberScreen", variable=Setting.joiner_bypassms).place(x=5,y=31)
+      ctk.CTkCheckBox(modules_frame01_01, bg_color=c13, text_color="#fff", border_color=c3, checkbox_width=20, checkbox_height=20, hover=False, border_width=3, text="Bypass MemberScreen", variable=Setting.joiner_bypassms, command=memberscreen_set).place(x=5,y=31)
       test = ctk.CTkLabel(modules_frame01_01, text_color="#fff", text="(?)")
       test.place(x=170,y=31)
       CTkToolTip(test, delay=0.5, message="Bypass the member screen when you join.") 

@@ -113,7 +113,7 @@ func extract(formatToken string) string {
 
 func randomAgent() string {
 	// ファイルを読み込み
-	content, err := ioutil.ReadFile("user-agent.txt")
+	content, err := ioutil.ReadFile("../../data/user-agent.txt")
 	if err != nil {
 		fmt.Println("Error reading file:", err)
 		return "" // エラーが発生した場合、空の文字列を返す
