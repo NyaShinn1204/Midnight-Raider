@@ -21,6 +21,12 @@ import (
 	"time"
 )
 
+// func main()で初期設定 token_fileからtokenをスライスする
+// func start()でスライスされたtokenの分joinerThreadを実行する
+// func joinerThread()でメイン処理
+
+// Usage: go run joiner_go.go <TOKEN FILE PATH   FULL PATH OR LOCAL PATH> None <INVITE LINK THIS> False 3 False None None False None
+// Example: go run joiner_go.go C:/Users/Shin/Desktop/Data/GitHub/ThreeCoinRaider/module/spam/tokens.txt None <INVITE LINK THIS> False 3 False None None False None
 var token_file string
 var tokens []string
 var serverid string
