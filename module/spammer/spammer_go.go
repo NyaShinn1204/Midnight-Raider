@@ -15,6 +15,10 @@ import (
 	"sync"
 	"time"
 )
+import (
+	"encoding/base64"
+	"regexp"
+)
 
 var channelid string
 var contents string
@@ -103,14 +107,158 @@ func main() {
 	wg.Wait()
 }
 
-func sendRequest(url string, contents string, token_file string, proxie_file string) {
-	proxy := getRandomProxy(proxie_file)
+func generateSuperProperties() string {
+	buildNum, err := getBuildnum()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	agentString := randomAgent()
+	browserData := strings.Split(agentString, " ")[len(strings.Split(agentString, " "))-1]
+	var agentOS string
+	if strings.Contains(agentString, "Windows") {
+		agentOS = "Windows"
+	} else if strings.Contains(agentString, "Macintosh") {
+		agentOS = "Macintosh"
+	}
+	var osVersion string
+	if agentOS == "Macintosh" {
+		osVersion = fmt.Sprintf("Intel Mac OS X 10_15_%d", rand.Intn(3)+5)
+	} else {
+		osVersion = "10"
+	}
+	deviceInfo := map[string]interface{}{
+		"os":                       agentOS,
+		"browser":                  strings.Split(browserData, "/")[0],
+		"device":                   "",
+		"system_locale":            "ja-JP",
+		"browser_user_agent":       agentString,
+		"browser_version":          strings.Split(browserData, "/")[1],
+		"os_version":               osVersion,
+		"referrer":                 "",
+		"referring_domain":         "",
+		"referrer_current":         "",
+		"referring_domain_current": "",
+		"release_channel":          "stable",
+		"client_build_number":      buildNum,
+		"client_event_source":      nil,
+	}
+	jsonData, _ := json.Marshal(deviceInfo)
+	return base64.StdEncoding.EncodeToString(jsonData)
+}
 
+func randomAgent() string {
+	// ファイルを読み込み
+	content, err := ioutil.ReadFile("../../data/user-agent.txt")
+	if err != nil {
+		fmt.Println("Error reading file:", err)
+		return "" // エラーが発生した場合、空の文字列を返す
+	}
+
+	// ファイルの内容を改行で分割し、agentsスライスに追加
+	lines := strings.Split(string(content), "\n")
+
+	// キャリッジリターンをトリム
+	for i := range lines {
+		lines[i] = strings.TrimSpace(lines[i])
+	}
+
+	rand.Seed(time.Now().UnixNano())
+	return lines[rand.Intn(len(lines))]
+}
+
+func getBuildnum() (int, error) {
+	// Discordのログインページからテキストを取得
+	resp, err := http.Get("https://discord.com/login")
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	text := string(body)
+
+	// スクリプトのURLを抽出
+	re := regexp.MustCompile(`\d+\.\w+\.js|sentry\.\w+\.js`)
+	matches := re.FindAllString(text, -1)
+	if len(matches) == 0 {
+		return 0, fmt.Errorf("script URL not found")
+	}
+	scriptURL := "https://discord.com/assets/" + matches[len(matches)-1]
+
+	// スクリプトのテキストを取得
+	resp, err = http.Get(scriptURL)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+	text = string(body)
+
+	// buildNumberを抽出
+	index := 0
+	for {
+		index = regexp.MustCompile("buildNumber").FindStringIndex(text)[0]
+		if index != 0 {
+			break
+		}
+		text = text[index+1:]
+	}
+	index += 26
+	buildNum := 0
+	for _, c := range text[index : index+6] {
+		if c >= '0' && c <= '9' {
+			buildNum = buildNum*10 + int(c-'0')
+		} else {
+			break
+		}
+	}
+
+	return buildNum, nil
+}
+
+func requestHeader(token string) map[string]string {
+	// ランダムなユーザーエージェントを生成
+	agentString := randomAgent()
+
+	// システムのビルド番号を取得
+	buildNum, err := getBuildnum()
+	if err != nil {
+		fmt.Println("Failed Get BuildNum:", err)
+	}
+
+	// デバイス情報の作成
+	deviceInfo := map[string]interface{}{
+		"os":                       "Windows",
+		"browser":                  "Chrome",
+		"device":                   "",
+		"system_locale":            "ja-JP",
+		"browser_user_agent":       agentString,
+		"browser_version":          "95.0.4638.54",
+		"os_version":               "10",
+		"referrer":                 "",
+		"referring_domain":         "",
+		"referrer_current":         "",
+		"referring_domain_current": "",
+		"release_channel":          "stable",
+		"client_build_number":      buildNum,
+		"client_event_source":      nil,
+	}
+
+	// デバイス情報をBase64エンコード
+	deviceInfoJSON, _ := json.Marshal(deviceInfo)
+	deviceInfoBase64 := base64.StdEncoding.EncodeToString(deviceInfoJSON)
+
+	// リクエストヘッダーの作成
 	headers := map[string]string{
 		"Accept":             "*/*",
 		"Accept-Encoding":    "gzip, deflate, br",
 		"Accept-Language":    "en-US",
-		"Authorization":      getRandomToken(token_file),
+		"Authorization":      token,
 		"Connection":         "keep-alive",
 		"Content-Type":       "application/json",
 		"Host":               "discord.com",
@@ -122,44 +270,148 @@ func sendRequest(url string, contents string, token_file string, proxie_file str
 		"sec-ch-ua-platform": "Windows",
 		"sec-ch-ua-mobile":   "?0",
 		"TE":                 "Trailers",
+		"User-Agent":         agentString,
+		"X-Debug-Options":    "bugReporterEnabled",
+		"X-Discord-Locale":   "ja",
+		"X-Discord-Timezone": "Asia/Tokyo",
+		"X-Super-Properties": deviceInfoBase64,
 	}
 
-	postData := map[string]interface{}{
-		"content": contents,
+	return headers
+}
+
+func getSession(useproxies bool, proxyurl *url.URL) *http.Client {
+	var transport *http.Transport
+
+	//tlsConfig := &tls.Config{
+	//	MinVersion:               tls.VersionTLS12,                            // 最低限のTLSバージョン
+	//	CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384}, // 楕円曲線の選択
+	//	PreferServerCipherSuites: true,                                        // サーバーが使用する暗号スイートを優先する
+	//	CipherSuites: []uint16{
+	//		tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, // 暗号スイートの指定
+	//		tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+	//	},
+	//	// 証明書の検証関連の設定
+	//	//RootCAs:            certPool, // ルート証明書を検証するCAリスト
+	//	//InsecureSkipVerify: false,    // サーバー証明書の検証をスキップするかどうか
+	//	//// その他の設定
+	//	//ClientAuth: tls.NoClientCert, // クライアント証明書の要求
+	//	//ServerName: "example.com",    // サーバー名
+	//}
+	//proxyURL, err := url.Parse("http://tbkzktta:de8si82ghq2y@154.95.36.199:6893")
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	if useproxies {
+		transport = &http.Transport{
+			//TLSClientConfig: tlsConfig,
+			Proxy: http.ProxyURL(proxyurl),
+		}
+	} else {
+		transport = &http.Transport{
+			//	TLSClientConfig: tlsConfig,
+		}
 	}
 
-	postJSON, err := json.Marshal(postData)
+	return &http.Client{
+		Transport: transport,
+	}
+}
+
+func sendRequest(url string, contents string, token_file string, proxie_file string) {
+	proxy := getRandomProxy(proxie_file)
+	session := getSession(true, proxy)
+
+	reqHeader := requestHeader(getRandomToken(token_file))
+	headers := reqHeader
+
+	// HTTPリクエスト作成
+	//req, err := http.NewRequest("POST", fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink), nil)
+	//if err != nil {
+	//	log.Fatalf("Failed to create request: %v", err)
+	//}
+
+	payload, err := json.Marshal(map[string]interface{}{"content": contents})
 	if err != nil {
 		fmt.Println("JSON marshal error:", err)
 		return
 	}
 
-	client := &http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyURL(proxy),
-		},
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(postJSON))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	if err != nil {
 		fmt.Println("Request error:", err)
 		return
 	}
 
+	// リクエストヘッダー設定
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
 
-	resp, err := client.Do(req)
+	// リクエスト送信
+	requests, err := session.Do(req)
 	if err != nil {
-		return
+		fmt.Printf("Failed to send request: %v", err)
 	}
-	defer resp.Body.Close()
+	//defer requests.Body.Close()
 
-	if resp.StatusCode == 200 {
-		fmt.Println("Success:", channelid, resp.StatusCode, proxy)
+	defer requests.Body.Close()
+
+	// レスポンスボディをバイト配列に読み込む
+	body, err := ioutil.ReadAll(requests.Body)
+	if err != nil {
+		fmt.Printf("Failed to read response body: %v", err)
+	}
+
+	//fmt.Println(requests.Body)
+
+	// レスポンスボディをJSONとしてパース
+	var jsonResponse map[string]interface{}
+	if err := json.Unmarshal(body, &jsonResponse); err != nil {
+		fmt.Printf("Failed to parse response body: %v", err)
+	}
+
+	fmt.Println(requests.StatusCode)
+
+	//reqHeader := requestHeader(getRandomToken(token_file), true, true)
+	//headers := reqHeader
+	//
+	//payloaddata := map[string]interface{}{
+	//	"content": contents,
+	//}
+	//
+	//payload, err := json.Marshal(payloaddata)
+	//if err != nil {
+	//	fmt.Println("JSON marshal error:", err)
+	//	return
+	//}
+	//
+	//client := &http.Client{
+	//	Transport: &http.Transport{
+	//		Proxy: http.ProxyURL(proxy),
+	//	},
+	//}
+	//
+	//req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	//if err != nil {
+	//	fmt.Println("Request error:", err)
+	//	return
+	//}
+	//
+	//for key, value := range headers {
+	//	req.Header.Set(key, value)
+	//}
+	//
+	//resp, err := client.Do(req)
+	//if err != nil {
+	//	return
+	//}
+	//defer resp.Body.Close()
+	//
+	if requests.StatusCode == 200 {
+		fmt.Println("Success:", channelid, requests.StatusCode, proxy)
 	} else {
-		fmt.Println("Failed:", channelid, resp.StatusCode, proxy)
+		fmt.Println("Failed:", channelid, requests.StatusCode, proxy)
 	}
 }
 

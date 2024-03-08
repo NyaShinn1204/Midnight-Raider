@@ -302,6 +302,8 @@ def module_thread(num1, num2, num3):
       mentions = Setting.nmspam_mention.get()
   
       delay = Setting.nmspam_delay.get()
+      
+      threads = "25"
         
       if serverid == "":
         print("[-] ServerID is not set")
@@ -312,13 +314,13 @@ def module_thread(num1, num2, num3):
   
       if num3 == 1:      
         if gomode == True:
-          print("gomode")
+          threading.Thread(target=module_spammer_go.start, args=(token_file, proxie_file, delay, tokens, module_status, serverid, channelid, contents, allchannel, allping, mentions, threads)).start()
 
         threading.Thread(target=module_normal_spammer.start, args=(delay, tokens, module_status, proxysetting, proxies, proxytype, serverid, channelid, contents, allchannel, allping, mentions, randomstring, ratelimit, randomconvert)).start()
 
       if num3 == 2:
         if gomode == True:
-          print("gomode")
+          threading.Thread(target=module_spammer_go.stop).start()
 
         threading.Thread(target=module_normal_spammer.stop).start()
 
