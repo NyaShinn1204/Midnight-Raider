@@ -416,7 +416,13 @@ func getChannels(token string, guildID string) ([]string, error) {
 			return nil, err
 		}
 
-		req.Header.Set("authorization", token)
+		reqHeader := requestHeader(token)
+		headers := reqHeader
+		// リクエストヘッダー設定
+		for key, value := range headers {
+			req.Header.Set(key, value)
+		}
+		//req.Header.Set("authorization", token)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
