@@ -24,7 +24,7 @@ def start(token_file, proxie_file, delay, tokens, module_status, serverid, chann
     print(delay)
     command = ['go', 'run', 'spammer_go.go', serverid, channelid, contents, f'{token_file}', f'{proxie_file}', f'{threads}', f'{allchannel}', f'{delay}', f'{allping}', f'{int(mentions)}'] + users
     print(command)
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, text=True, cwd=r"./module/spam/")
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, text=True, cwd=r"./module/spammer/")
     monitor_thread = threading.Thread(target=monitor_process, args=(module_status, channelid))
     monitor_thread.start()
 
