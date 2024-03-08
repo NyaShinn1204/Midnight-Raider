@@ -108,6 +108,35 @@ func main() {
 		fmt.Println("Token file path is required.")
 		return
 	}
+	// 招待リンクからServeridを取得するコード
+	if serverid == "None" {
+		// HTTP GETリクエストを送信してレスポンスを取得
+		//fmt.Println(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", inviteLink))
+		resp, err := session.Get(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", invitelink))
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer resp.Body.Close()
+		fmt.Println(resp.StatusCode)
+		// レスポンスのステータスコードを確認
+		if resp.StatusCode != http.StatusOK {
+			fmt.Println(fmt.Sprintf("Server returned non-OK status: %d", resp.StatusCode))
+		}
+		// JSONデコードしてマップに変換
+		var data map[string]interface{}
+		if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+			fmt.Println("Error decoding JSON:", err)
+		}
+
+		// "guild_id"キーが存在するか確認し、存在する場合はその値を取得
+		if serverid_tmp, ok := data["guild_id"].(string); ok {
+			fmt.Println("Server ID:", serverid_tmp)
+			serverid = serverid_tmp
+		} else {
+			fmt.Println("Server IDの取得に失敗しました")
+			os.Exit(1)
+		}
+	}
 	start(tokens, serverid, invitelink, memberscreen, answers, apikey, bypasscaptcha, deletejoinmsg, joinchannelid, useproxy, proxie_file)
 }
 
@@ -516,34 +545,6 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 		fmt.Println("Check proxie Status code:", checkproxy(proxy))
 	} else {
 		session = getSession(false, nil)
-	}
-	// 招待リンクからServeridを取得するコード
-	if serverid == "None" {
-		// HTTP GETリクエストを送信してレスポンスを取得
-		//fmt.Println(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", inviteLink))
-		resp, err := session.Get(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", inviteLink))
-		if err != nil {
-			fmt.Println(err)
-		}
-		defer resp.Body.Close()
-		fmt.Println(resp.StatusCode)
-		// レスポンスのステータスコードを確認
-		if resp.StatusCode != http.StatusOK {
-			fmt.Println(fmt.Sprintf("Server returned non-OK status: %d", resp.StatusCode))
-		}
-		// JSONデコードしてマップに変換
-		var data map[string]interface{}
-		if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-			fmt.Println("Error decoding JSON:", err)
-		}
-
-		// "guild_id"キーが存在するか確認し、存在する場合はその値を取得
-		if serverID, ok := data["guild_id"].(string); ok {
-			fmt.Println("Server ID:", serverID)
-		} else {
-			fmt.Println("Server ID not found or not a string")
-		}
-
 	}
 	// JSON形式の文字列に変換
 	// お試しjson show
