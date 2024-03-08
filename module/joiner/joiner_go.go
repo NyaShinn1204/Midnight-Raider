@@ -25,7 +25,7 @@ import (
 // func start()でスライスされたtokenの分joinerThreadを実行する
 // func joinerThread()でメイン処理
 
-// Usage: go run joiner_go.go <TOKEN FILE PATH   FULL PATH OR LOCAL PATH> None <INVITE LINK THIS> False 3 False None None False None
+// Usage: go run joiner_go.go <TOKEN FILE PATH   FULL PATH OR LOCAL PATH> None <INVITE LINK THIS> False 3 False None None False None <Use Proxy "True" or "False"> <PROXIE FILE PATH   FULL PATH OR LOCAL PATH>
 // Example: go run joiner_go.go C:/Users/Shin/Desktop/Data/GitHub/ThreeCoinRaider/module/spam/tokens.txt None <INVITE LINK THIS> False 3 False None None False None
 var token_file string
 var tokens []string
@@ -38,8 +38,11 @@ var answers string
 var apikey string
 var deletejoinmsg string
 var joinchannelid string
+var useproxy string
+var proxie_file string
 
 var sleepDuration time.Duration
+var session *http.Client
 
 func main() {
 	// token_file serverid invitelink memberscreen delay bypasscaptcha answers apikey deletejoinmsg joinchannelid
@@ -59,6 +62,12 @@ func main() {
 		sleepDuration = time.Duration(delay * float64(time.Second))
 	}
 
+	if sleepDuration == time.Duration(int(0)) {
+		fmt.Println("delayが0秒の場合は実行できません")
+		os.Exit(1)
+	}
+	//fmt.Println(sleepDuration)
+
 	// sleepDurationの間スリープ
 	//time.Sleep(sleepDuration)
 	//delay, err := strconv.Atoi(delay_str)
@@ -68,8 +77,8 @@ func main() {
 	deletejoinmsg = args[8]
 	joinchannelid = args[9]
 
-	useproxy := args[10]
-	proxie_file := args[11]
+	useproxy = args[10]
+	proxie_file = args[11]
 
 	if err != nil {
 		fmt.Println("変換に失敗しました:", err)
@@ -99,7 +108,6 @@ func main() {
 		fmt.Println("Token file path is required.")
 		return
 	}
-
 	start(tokens, serverid, invitelink, memberscreen, answers, apikey, bypasscaptcha, deletejoinmsg, joinchannelid, useproxy, proxie_file)
 }
 
@@ -490,7 +498,6 @@ func solver(answers string, token string, url string, sitekey string, apikey str
 //solver(answers, token, "https://discord.com", joinreq.JSON().(map[string]interface{})["captcha_sitekey"].(string), apis
 
 func joinerThread(token, serverID, inviteLink string, memberScreen string, answers string, apis string, bypassCaptcha string, deleteJoinMs string, joinChannelID string, useproxy string, proxie_file string) {
-	var session *http.Client
 	// 必要な処理を実装
 	fmt.Println(token)
 	fmt.Println(serverID)
