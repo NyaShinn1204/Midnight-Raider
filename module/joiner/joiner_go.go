@@ -1,6 +1,7 @@
 package main
 
 // TODO Add more future, Fix bugs
+// TODO What the heck? Why use Bypass Memberscreen to got Lock the acccount???
 
 import (
 	"bufio"
