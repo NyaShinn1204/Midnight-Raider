@@ -21,6 +21,9 @@ import (
 	"time"
 )
 
+//メモ:
+//go文は待機時間が0秒だと処理がされずに終了される
+
 // func main()で初期設定 token_fileからtokenをスライスする
 // func start()でスライスされたtokenの分joinerThreadを実行する
 // func joinerThread()でメイン処理
