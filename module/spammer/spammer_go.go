@@ -3,6 +3,7 @@ package main
 import (
 	"C"
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,14 +11,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-)
-import (
-	"encoding/base64"
-	"regexp"
 )
 
 var channelid string
@@ -282,26 +280,6 @@ func requestHeader(token string) map[string]string {
 
 func getSession(useproxies bool, proxyurl *url.URL) *http.Client {
 	var transport *http.Transport
-
-	//tlsConfig := &tls.Config{
-	//	MinVersion:               tls.VersionTLS12,                            // 最低限のTLSバージョン
-	//	CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384}, // 楕円曲線の選択
-	//	PreferServerCipherSuites: true,                                        // サーバーが使用する暗号スイートを優先する
-	//	CipherSuites: []uint16{
-	//		tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, // 暗号スイートの指定
-	//		tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-	//	},
-	//	// 証明書の検証関連の設定
-	//	//RootCAs:            certPool, // ルート証明書を検証するCAリスト
-	//	//InsecureSkipVerify: false,    // サーバー証明書の検証をスキップするかどうか
-	//	//// その他の設定
-	//	//ClientAuth: tls.NoClientCert, // クライアント証明書の要求
-	//	//ServerName: "example.com",    // サーバー名
-	//}
-	//proxyURL, err := url.Parse("http://tbkzktta:de8si82ghq2y@154.95.36.199:6893")
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
 	if useproxies {
 		transport = &http.Transport{
 			//TLSClientConfig: tlsConfig,
@@ -325,12 +303,6 @@ func sendRequest(url string, contents string, token_file string, proxie_file str
 	reqHeader := requestHeader(getRandomToken(token_file))
 	headers := reqHeader
 
-	// HTTPリクエスト作成
-	//req, err := http.NewRequest("POST", fmt.Sprintf("https://discord.com/api/v9/invites/%s", inviteLink), nil)
-	//if err != nil {
-	//	log.Fatalf("Failed to create request: %v", err)
-	//}
-
 	payload, err := json.Marshal(map[string]interface{}{"content": contents})
 	if err != nil {
 		fmt.Println("JSON marshal error:", err)
@@ -353,7 +325,6 @@ func sendRequest(url string, contents string, token_file string, proxie_file str
 	if err != nil {
 		fmt.Printf("Failed to send request: %v", err)
 	}
-	//defer requests.Body.Close()
 
 	defer requests.Body.Close()
 
@@ -363,8 +334,6 @@ func sendRequest(url string, contents string, token_file string, proxie_file str
 		fmt.Printf("Failed to read response body: %v", err)
 	}
 
-	//fmt.Println(requests.Body)
-
 	// レスポンスボディをJSONとしてパース
 	var jsonResponse map[string]interface{}
 	if err := json.Unmarshal(body, &jsonResponse); err != nil {
@@ -373,41 +342,6 @@ func sendRequest(url string, contents string, token_file string, proxie_file str
 
 	fmt.Println(requests.StatusCode)
 
-	//reqHeader := requestHeader(getRandomToken(token_file), true, true)
-	//headers := reqHeader
-	//
-	//payloaddata := map[string]interface{}{
-	//	"content": contents,
-	//}
-	//
-	//payload, err := json.Marshal(payloaddata)
-	//if err != nil {
-	//	fmt.Println("JSON marshal error:", err)
-	//	return
-	//}
-	//
-	//client := &http.Client{
-	//	Transport: &http.Transport{
-	//		Proxy: http.ProxyURL(proxy),
-	//	},
-	//}
-	//
-	//req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	//if err != nil {
-	//	fmt.Println("Request error:", err)
-	//	return
-	//}
-	//
-	//for key, value := range headers {
-	//	req.Header.Set(key, value)
-	//}
-	//
-	//resp, err := client.Do(req)
-	//if err != nil {
-	//	return
-	//}
-	//defer resp.Body.Close()
-	//
 	if requests.StatusCode == 200 {
 		fmt.Println("Success:", channelid, requests.StatusCode, proxy)
 	} else {
