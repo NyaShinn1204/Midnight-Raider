@@ -1,5 +1,7 @@
 package main
 
+// TODO Add more future, Fix bugs
+
 import (
 	"bufio"
 	"bytes"
