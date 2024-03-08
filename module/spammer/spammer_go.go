@@ -26,8 +26,11 @@ var delay_str string
 var allping string
 var mentions_str string
 
+var sleepDuration time.Duration
+
 func main() {
 	args := os.Args[1:]
+
 	serverid := args[0]
 	channelid = args[1]
 	contents = args[2]
@@ -37,11 +40,23 @@ func main() {
 	threads, err := strconv.Atoi(threads_str)
 	allchannel = args[6]
 	delay_str = args[7]
-	delay, err := strconv.Atoi(delay_str)
+	delay, err := strconv.ParseFloat(delay_str, 64)
+
+	// delayが整数かどうかをチェックし、整数の場合は秒単位に変換
+	if delay == float64(int(delay)) {
+		sleepDuration = time.Duration(int(delay)) * time.Second
+	} else {
+		sleepDuration = time.Duration(delay * float64(time.Second))
+	}
+
+	// sleepDurationの間スリープ
+	//time.Sleep(sleepDuration)
+	//delay, err := strconv.Atoi(delay_str)
 	allping = args[8]
-	users := args[10:]
 	mentions_str = args[9]
 	mentions, err := strconv.Atoi(mentions_str)
+	users := args[10:]
+
 	contents_tmp := ""
 
 	fmt.Println(args[7:])
@@ -79,8 +94,8 @@ func main() {
 
 					contents_tmp = contents + " " + strings.Join(formattedIDs, " ")
 				}
-				sendRequest(fmt.Sprintf("https://discord.com/api/v9/channels/%s/messages", channelid), serverid, contents_tmp, token_file, proxie_file)
-				time.Sleep(time.Duration(delay) * time.Second)
+				sendRequest(fmt.Sprintf("https://discord.com/api/v9/channels/%s/messages", channelid), contents_tmp, token_file, proxie_file)
+				time.Sleep(sleepDuration)
 			}
 		}()
 	}
@@ -88,7 +103,7 @@ func main() {
 	wg.Wait()
 }
 
-func sendRequest(url string, serverid string, contents string, token_file string, proxie_file string) {
+func sendRequest(url string, contents string, token_file string, proxie_file string) {
 	proxy := getRandomProxy(proxie_file)
 
 	headers := map[string]string{

@@ -36,6 +36,7 @@ var sleepDuration time.Duration
 func main() {
 	// token_file serverid invitelink memberscreen delay bypasscaptcha answers apikey deletejoinmsg joinchannelid
 	args := os.Args[1:]
+
 	token_file = args[0]
 	serverid = args[1]
 	invitelink = args[2]
