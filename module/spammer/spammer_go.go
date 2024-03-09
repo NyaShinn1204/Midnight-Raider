@@ -343,9 +343,9 @@ func sendRequest(url string, contents string, token_file string, proxie_file str
 	fmt.Println(requests.StatusCode)
 
 	if requests.StatusCode == 200 {
-		fmt.Println("Success:", channelid, requests.StatusCode, proxy)
+		fmt.Println("[+] 送信に成功しました ChannelID:", channelid, requests.StatusCode, proxy)
 	} else {
-		fmt.Println("Failed:", channelid, requests.StatusCode, proxy)
+		fmt.Println("[-] 送信に失敗しました ChannelID:", channelid, requests.StatusCode, proxy)
 	}
 }
 

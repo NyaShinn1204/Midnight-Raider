@@ -38,14 +38,14 @@ def monitor_process(module_status, channelid):
     global process
     while process.poll() is None:
         output = process.stdout.readline().strip()
-        #print(output)
-        if output:
-            matches = re.findall(r'\b\d+\b', output)
-            if matches:
-                channelid = matches[0]
-            if 'Success' in output:
-                print(f"[+] 送信に成功しました ChannelID: {channelid}")
-                module_status(2, 2, 1)
-            else:
-                print(f"[-] 送信に失敗しました ChannelID: {channelid}")
-                module_status(2, 2, 2)
+        print(output)
+        #if output:
+        #    matches = re.findall(r'\b\d+\b', output)
+        #    if matches:
+        #        channelid = matches[0]
+        #    if '[+]' in output:
+        #        print(f"[+] 送信に成功しました ChannelID: {channelid}")
+        #        module_status(2, 2, 1)
+        #    else:
+        #        print(f"[-] 送信に失敗しました ChannelID: {channelid}")
+        #        module_status(2, 2, 2)
