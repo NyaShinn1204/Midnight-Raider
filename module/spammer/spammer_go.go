@@ -42,18 +42,23 @@ func main() {
 	threads, err := strconv.Atoi(threads_str)
 	allchannel = args[6]
 	delay_str = args[7]
-	delay, err := strconv.ParseFloat(delay_str, 64)
+	delay, err := strconv.Atoi(delay_str)
+	sleepDuration = time.Duration(delay) * time.Second
 
-	// delayが整数かどうかをチェックし、整数の場合は秒単位に変換
-	if delay == float64(int(delay)) {
-		sleepDuration = time.Duration(int(delay)) * time.Second
-	} else {
-		sleepDuration = time.Duration(delay * float64(time.Second))
-	}
+	// delayから変換するやつバグってるので一時的に殺します
+	//delay, err := strconv.ParseFloat(delay_str, 64)
+
+	//// delayが整数かどうかをチェックし、整数の場合は秒単位に変換
+	//if delay == float64(int(delay)) {
+	//	sleepDuration = time.Duration(int(delay)) * time.Second
+	//} else {
+	//	sleepDuration = time.Duration(delay * float64(time.Second))
+	//}
 
 	// sleepDurationの間スリープ
 	//time.Sleep(sleepDuration)
 	//delay, err := strconv.Atoi(delay_str)
+
 	allping = args[8]
 	mentions_str = args[9]
 	mentions, err := strconv.Atoi(mentions_str)
@@ -97,6 +102,7 @@ func main() {
 					contents_tmp = contents + " " + strings.Join(formattedIDs, " ")
 				}
 				sendRequest(fmt.Sprintf("https://discord.com/api/v9/channels/%s/messages", channelid), contents_tmp, token_file, proxie_file)
+				fmt.Println()
 				time.Sleep(sleepDuration)
 			}
 		}()
@@ -315,6 +321,8 @@ func sendRequest(url string, contents string, token_file string, proxie_file str
 		return
 	}
 
+	req.Close = true
+
 	// リクエストヘッダー設定
 	for key, value := range headers {
 		req.Header.Set(key, value)
@@ -324,28 +332,18 @@ func sendRequest(url string, contents string, token_file string, proxie_file str
 	requests, err := session.Do(req)
 	if err != nil {
 		fmt.Printf("Failed to send request: %v", err)
+		return
+		//return
 	}
 
 	defer requests.Body.Close()
 
-	// レスポンスボディをバイト配列に読み込む
-	body, err := ioutil.ReadAll(requests.Body)
-	if err != nil {
-		fmt.Printf("Failed to read response body: %v", err)
-	}
-
-	// レスポンスボディをJSONとしてパース
-	var jsonResponse map[string]interface{}
-	if err := json.Unmarshal(body, &jsonResponse); err != nil {
-		fmt.Printf("Failed to parse response body: %v", err)
-	}
-
-	fmt.Println(requests.StatusCode)
+	//fmt.Println(requests.StatusCode)
 
 	if requests.StatusCode == 200 {
-		fmt.Println("[+] 送信に成功しました ChannelID:", channelid, requests.StatusCode, proxy)
+		fmt.Println("[+] Succes to Sent ChannelID:", channelid, requests.StatusCode, proxy)
 	} else {
-		fmt.Println("[-] 送信に失敗しました ChannelID:", channelid, requests.StatusCode, proxy)
+		fmt.Println("[-] Failed to Sent ChannelID:", channelid, requests.StatusCode, proxy)
 	}
 }
 

@@ -284,8 +284,8 @@ def module_thread(num1, num2, num3):
       if num3 == 1:
         if gomode == True:
           threading.Thread(target=module_joiner_go.start, args=(token_file, proxie_file, serverid, invitelink, memberscreen, delay, bypasscaptcha, answers, api, delete_joinms, join_channelid, proxysetting, module_status)).start()
-
-        threading.Thread(target=module_joiner.start, args=(tokens, serverid, invitelink, memberscreen, delay, module_status, answers, api, bypasscaptcha, delete_joinms, join_channelid)).start()
+        else:
+          threading.Thread(target=module_joiner.start, args=(tokens, serverid, invitelink, memberscreen, delay, module_status, answers, api, bypasscaptcha, delete_joinms, join_channelid)).start()
 
   if num1 == 2:
     if num2 == 1:
@@ -315,14 +315,14 @@ def module_thread(num1, num2, num3):
       if num3 == 1:      
         if gomode == True:
           threading.Thread(target=module_spammer_go.start, args=(token_file, proxie_file, delay, tokens, module_status, serverid, channelid, contents, allchannel, allping, mentions, threads)).start()
-
-        threading.Thread(target=module_normal_spammer.start, args=(delay, tokens, module_status, proxysetting, proxies, proxytype, serverid, channelid, contents, allchannel, allping, mentions, randomstring, ratelimit, randomconvert)).start()
+        else:
+          threading.Thread(target=module_normal_spammer.start, args=(delay, tokens, module_status, proxysetting, proxies, proxytype, serverid, channelid, contents, allchannel, allping, mentions, randomstring, ratelimit, randomconvert)).start()
 
       if num3 == 2:
         if gomode == True:
           threading.Thread(target=module_spammer_go.stop).start()
-
-        threading.Thread(target=module_normal_spammer.stop).start()
+        else:
+          threading.Thread(target=module_normal_spammer.stop).start()
 
 def module_status(num1, num2, num3):
   if num1 == 1:
