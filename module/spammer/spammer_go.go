@@ -66,7 +66,7 @@ func main() {
 
 	contents_tmp := ""
 
-	fmt.Println(args[7:])
+	//fmt.Println(args[7:])
 
 	if err != nil {
 		fmt.Println("変換に失敗しました:", err)
