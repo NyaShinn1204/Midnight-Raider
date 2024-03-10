@@ -113,7 +113,7 @@ func main() {
 		return
 	}
 	// 招待リンクからServeridを取得するコード
-	if serverid == "None" {
+	if serverid != "" {
 		// HTTP GETリクエストを送信してレスポンスを取得
 		//fmt.Println(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", inviteLink))
 		resp, err := session.Get(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", invitelink))
