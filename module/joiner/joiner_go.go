@@ -30,7 +30,7 @@ import (
 // func joinerThread()でメイン処理
 
 // Usage: go run joiner_go.go <TOKEN FILE PATH   FULL PATH OR LOCAL PATH> None <INVITE LINK THIS> False 3 False None None False None <Use Proxy "True" or "False"> <PROXIE FILE PATH   FULL PATH OR LOCAL PATH>
-// Example: go run joiner_go.go C:/Users/Shin/Desktop/Data/GitHub/ThreeCoinRaider/module/spam/tokens.txt None <INVITE LINK THIS> False 3 False None None False None
+// Example: go run joiner_go.go C:/Users/Shin/Downloads/token-lol.txt None THCcUsts False 0.1 False None None False None
 var token_file string
 var tokens []string
 var serverid string
@@ -141,6 +141,16 @@ func main() {
 			os.Exit(1)
 		}
 	}
+	fmt.Println(token_file)
+	fmt.Println(serverid)
+	fmt.Println(invitelink)
+	fmt.Println(memberscreen)
+	fmt.Println(answers)
+	fmt.Println(apikey)
+	fmt.Println(bypasscaptcha)
+	fmt.Println(deletejoinmsg)
+	fmt.Println(joinchannelid)
+	fmt.Println("Use Proxy?", useproxy)
 	start(tokens, serverid, invitelink, memberscreen, answers, apikey, bypasscaptcha, deletejoinmsg, joinchannelid, useproxy, proxie_file)
 }
 
@@ -236,7 +246,7 @@ func getBuildnum() (int, error) {
 	return buildNum, nil
 }
 
-func getFingerprint() (string, error) {
+func getFingerprint(agentString string) (string, error) {
 	// リクエスト用のヘッダーを定義
 	headers := map[string]string{
 		"Accept":          "*/*",
@@ -247,7 +257,7 @@ func getFingerprint() (string, error) {
 		"Sec-Fetch-Mode":  "cors",
 		"Sec-Fetch-Site":  "same-origin",
 		"Sec-GPC":         "1",
-		"User-Agent":      "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36 Edg/114.0.1823.51",
+		"User-Agent":      agentString,
 		"X-Track":         "eyJvcyI6IklPUyIsImJyb3dzZXIiOiJTYWZlIiwic3lzdGVtX2xvY2FsZSI6ImVuLUdCIiwiYnJvd3Nlcl91c2VyX2FnZW50IjoiTW96aWxsYS81LjAgKElQaG9uZTsgQ1BVIEludGVybmFsIFByb2R1Y3RzIFN0b3JlLCBhcHBsaWNhdGlvbi8yMDUuMS4xNSAoS0hUTUwpIFZlcnNpb24vMTUuMCBNb2JpbGUvMTVFMjQ4IFNhZmFyaS82MDQuMSIsImJyb3dzZXJfdmVyc2lvbiI6IjE1LjAiLCJvc192IjoiIiwicmVmZXJyZXIiOiIiLCJyZWZlcnJpbmdfZG9tYWluIjoiIiwicmVmZXJyZXJfZG9tYWluX2Nvb2tpZSI6InN0YWJsZSIsImNsaWVudF9idWlsZF9udW1iZXIiOjk5OTksImNsaWVudF9ldmVudF9zb3VyY2UiOiJzdGFibGUiLCJjbGllbnRfZXZlbnRfc291cmNlIjoic3RhYmxlIn0",
 	}
 
@@ -413,7 +423,7 @@ func requestHeader(token string, includeFingerprint, includeCookie bool) map[str
 
 	// fingerprintを含める場合
 	if includeFingerprint {
-		fingerprint, err := getFingerprint()
+		fingerprint, err := getFingerprint(agentString)
 		if err != nil {
 			fmt.Println("Failed to get fingerprint:", err)
 		}
@@ -532,16 +542,16 @@ func solver(answers string, token string, url string, sitekey string, apikey str
 
 func joinerThread(token, serverID, inviteLink string, memberScreen string, answers string, apis string, bypassCaptcha string, deleteJoinMs string, joinChannelID string, useproxy string, proxie_file string) {
 	// 必要な処理を実装
-	fmt.Println(token)
-	fmt.Println(serverID)
-	fmt.Println(inviteLink)
-	fmt.Println(memberScreen)
-	fmt.Println(answers)
-	fmt.Println(apis)
-	fmt.Println(bypassCaptcha)
-	fmt.Println(deleteJoinMs)
-	fmt.Println(joinChannelID)
-	fmt.Println("Use Proxy?", useproxy)
+	//fmt.Println(token)
+	//fmt.Println(serverID)
+	//fmt.Println(inviteLink)
+	//fmt.Println(memberScreen)
+	//fmt.Println(answers)
+	//fmt.Println(apis)
+	//fmt.Println(bypassCaptcha)
+	//fmt.Println(deleteJoinMs)
+	//fmt.Println(joinChannelID)
+	//fmt.Println("Use Proxy?", useproxy)
 	if useproxy == "True" {
 		proxy := getRandomProxy(proxie_file)
 		session = getSession(true, proxy)
@@ -605,7 +615,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 	// レスポンスボディをJSONとしてパース
 	var jsonResponse map[string]interface{}
 	if err := json.Unmarshal(body, &jsonResponse); err != nil {
-		log.Fatalf("Failed to parse response body: %v", err)
+		log.Fatalf("line: 618  Failed to parse response body: %v", err)
 	}
 
 	fmt.Println(joinreq.StatusCode)
@@ -653,7 +663,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 			// レスポンスボディをJSONとしてパース
 			var jsonResponse map[string]interface{}
 			if err := json.Unmarshal(body, &jsonResponse); err != nil {
-				log.Fatalf("Failed to parse response body: %v", err)
+				log.Fatalf("line: 666  Failed to parse response body: %v", err)
 			}
 			//defer joinreq.Body.Close()
 			//joinreq, err = client.R().
@@ -699,7 +709,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 			// レスポンスボディをJSONとしてパース
 			var jsonResponse map[string]interface{}
 			if err := json.Unmarshal(body, &jsonResponse); err != nil {
-				log.Fatalf("Failed to parse response body: %v", err)
+				log.Fatalf("line: 712  Failed to parse response body: %v", err)
 			}
 			//defer joinreq.Body.Close()
 			//joinreq, err = client.R().
