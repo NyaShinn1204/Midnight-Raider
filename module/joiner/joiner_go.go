@@ -45,6 +45,8 @@ var joinchannelid string
 var useproxy string
 var proxie_file string
 
+var requeststatuscode int
+
 var sleepDuration time.Duration
 var session *http.Client
 
@@ -66,10 +68,10 @@ func main() {
 		sleepDuration = time.Duration(delay * float64(time.Second))
 	}
 
-	if sleepDuration >= 0*time.Second && sleepDuration <= 588*time.Millisecond {
-		fmt.Println("delayが0から0.588秒の間の場合は実行できません 最小実行可能数値は0.589です")
-		os.Exit(1)
-	}
+	//if sleepDuration >= 0*time.Second && sleepDuration <= 890*time.Millisecond {
+	//	fmt.Println("delayが0から0.588秒の間の場合は実行できません 最小実行可能数値は0.9です")
+	//	os.Exit(1)
+	//}
 	//fmt.Println(sleepDuration)
 
 	// sleepDurationの間スリープ
@@ -155,9 +157,14 @@ func main() {
 }
 
 func start(tokens []string, serverID, inviteLink string, memberScreen string, answers string, apis string, bypassCaptcha string, deleteJoinMs string, joinChannelID string, useproxy string, proxie_file string) {
-	for _, token := range tokens {
-		go joinerThread(token, serverID, inviteLink, memberScreen, answers, apis, bypassCaptcha, deleteJoinMs, joinChannelID, useproxy, proxie_file)
-		time.Sleep(sleepDuration)
+	for i, token := range tokens {
+		if i > 0 {
+			time.Sleep(sleepDuration)
+		}
+		requeststatuscode := joinerThread(token, serverID, inviteLink, memberScreen, answers, apis, bypassCaptcha, deleteJoinMs, joinChannelID, useproxy, proxie_file)
+		// requeststatuscodeを確認して、次のスレッドに進むかどうかを判断
+		statusCodeStr := strconv.Itoa(requeststatuscode)
+		fmt.Printf("Finaly Status code: %s\n", statusCodeStr)
 	}
 }
 
@@ -550,7 +557,7 @@ func solver(answers string, token string, url string, sitekey string, apikey str
 
 //solver(answers, token, "https://discord.com", joinreq.JSON().(map[string]interface{})["captcha_sitekey"].(string), apis
 
-func joinerThread(token, serverID, inviteLink string, memberScreen string, answers string, apis string, bypassCaptcha string, deleteJoinMs string, joinChannelID string, useproxy string, proxie_file string) {
+func joinerThread(token, serverID, inviteLink string, memberScreen string, answers string, apis string, bypassCaptcha string, deleteJoinMs string, joinChannelID string, useproxy string, proxie_file string) int {
 	// 必要な処理を実装
 	//fmt.Println(token)
 	//fmt.Println(serverID)
@@ -584,9 +591,9 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 	extractToken := fmt.Sprintf("%s.%s", strings.Split(extract(token+"]"), ".")[0], strings.Split(extract(token+"]"), ".")[1])
 
 	//session := getSession(true,)
-	fmt.Println(token)
+	//fmt.Println(token)
 	reqHeader := requestHeader(token, true, true) //ここでエラーが発生
-	fmt.Println(reqHeader)
+	//fmt.Println(reqHeader)
 	//os.Exit(1)
 	headers := reqHeader
 
@@ -631,7 +638,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 		log.Fatalf("line: 618  Failed to parse response body: %v", err)
 	}
 
-	fmt.Println(joinreq.StatusCode)
+	fmt.Println("First Join Requests Status Code:", joinreq.StatusCode)
 
 	if joinreq.StatusCode == 400 {
 		if bypassCaptcha == "True" {
@@ -678,6 +685,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 			if err := json.Unmarshal(body, &jsonResponse); err != nil {
 				log.Fatalf("line: 666  Failed to parse response body: %v", err)
 			}
+			requeststatuscode = newresponse.StatusCode
 			//defer joinreq.Body.Close()
 			//joinreq, err = client.R().
 			//	SetHeaders(headers).
@@ -732,34 +740,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 			if err != nil {
 				log.Fatalf("Failed to send join request: %v", err)
 			}
-		}
-		if joinreq.StatusCode == 200 {
-			if _, ok := jsonResponse["captcha_key"]; !ok {
-				if _, ok := jsonResponse["You need to verify your account in order to perform this action."]; ok {
-					fmt.Printf("認証が必要です | %s\n", extractToken)
-					fmt.Println("失敗しました")
-				}
-				fmt.Printf("Successfully Token Join | %s\n", extractToken)
-				if deleteJoinMs == "True" {
-					fmt.Printf("Deleting Join Message | %s\n", extractToken)
-					deleteJoinMsg(token, joinChannelID)
-				}
-				fmt.Println("成功しました")
-			}
-			//if memberScreen {
-			//	acceptRulesBypass(token, joinreq.JSON(), serverID, inviteLink)
-			//}
-			//if changeNick {
-			//	changeNicker(token, serverID, nickname)
-			//}
-		} else {
-			if _, ok := jsonResponse["captcha_key"]; ok {
-				fmt.Printf("Failed Token Join (Captcha Wrong) | %s\n", extractToken)
-				fmt.Println(jsonResponse)
-				fmt.Println("失敗しました")
-			} else {
-				fmt.Printf("Failed Captcha Bypass | %s | %s\n", extractToken, strings.ReplaceAll(string(body), "\n", ""))
-			}
+			requeststatuscode = newresponse.StatusCode
 		}
 	} else if joinreq.StatusCode == 200 {
 		fmt.Println(joinreq.StatusCode)
@@ -781,6 +762,7 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 		//if changeNick {
 		//	changeNicker(token, serverID, nickname)
 		//}
+		requeststatuscode = joinreq.StatusCode
 	} else if joinreq.StatusCode == 403 {
 		if strings.Contains(string(body), "You need to verify your account in order to perform this action.") ||
 			strings.Contains(string(body), "このユーザーは、このギルドからBANされています。") ||
@@ -788,7 +770,9 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 			fmt.Printf("Banned from Server | %s\n", extractToken)
 			//fmt.Println("失敗しました")
 		}
+		requeststatuscode = joinreq.StatusCode
 	}
+	return requeststatuscode
 }
 
 func deleteJoinMsg(token, joinChannelID string) {
