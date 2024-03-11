@@ -49,7 +49,7 @@ var sleepDuration time.Duration
 var session *http.Client
 
 func main() {
-	// token_file serverid invitelink memberscreen delay bypasscaptcha answers apikey deletejoinmsg joinchannelid
+	// token_file serverid invitelink memberscreen delay bypasscaptcha answers apikey deletejoinmsg joinchannelid useproxy proxie_file
 	args := os.Args[1:]
 
 	token_file = args[0]
@@ -66,8 +66,8 @@ func main() {
 		sleepDuration = time.Duration(delay * float64(time.Second))
 	}
 
-	if sleepDuration == time.Duration(int(0)) {
-		fmt.Println("delayが0秒の場合は実行できません")
+	if sleepDuration >= 0*time.Second && sleepDuration <= 588*time.Millisecond {
+		fmt.Println("delayが0から0.588秒の間の場合は実行できません 最小実行可能数値は0.589です")
 		os.Exit(1)
 	}
 	//fmt.Println(sleepDuration)
@@ -116,7 +116,7 @@ func main() {
 	if serverid != "" {
 		// HTTP GETリクエストを送信してレスポンスを取得
 		//fmt.Println(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", inviteLink))
-		resp, err := session.Get(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", invitelink))
+		resp, err := http.Get(fmt.Sprintf("https://discord.com/api/v9/invites/%s?with_counts=true&with_expiration=true", invitelink))
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -380,7 +380,7 @@ func requestHeader(token string, includeFingerprint, includeCookie bool) map[str
 		"os":                       "Windows",
 		"browser":                  "Chrome",
 		"device":                   "",
-		"system_locale":            "ja-JP",
+		"system_locale":            "en-US",
 		"browser_user_agent":       agentString,
 		"browser_version":          "95.0.4638.54",
 		"os_version":               "10",
@@ -423,16 +423,26 @@ func requestHeader(token string, includeFingerprint, includeCookie bool) map[str
 
 	// fingerprintを含める場合
 	if includeFingerprint {
+		// フィンガープリントを取得
 		fingerprint, err := getFingerprint(agentString)
 		if err != nil {
 			fmt.Println("Failed to get fingerprint:", err)
+		} else {
+			//fmt.Println("Fingerprint:", fingerprint)
+			headers["X-Fingerprint"] = fingerprint
 		}
-		headers["X-Fingerprint"] = fingerprint
 	}
 
 	// cookieを含める場合
 	if includeCookie {
-		headers["Cookie"] = getCookie()
+		// Cookieを取得
+		cookie := getCookie()
+		if cookie == "" {
+			fmt.Println("Error getting cookie: empty cookie")
+		} else {
+			//fmt.Println("Cookie:", cookie)
+			headers["Cookie"] = getCookie()
+		}
 	}
 
 	return headers
@@ -574,7 +584,10 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 	extractToken := fmt.Sprintf("%s.%s", strings.Split(extract(token+"]"), ".")[0], strings.Split(extract(token+"]"), ".")[1])
 
 	//session := getSession(true,)
-	reqHeader := requestHeader(token, true, true)
+	fmt.Println(token)
+	reqHeader := requestHeader(token, true, true) //ここでエラーが発生
+	fmt.Println(reqHeader)
+	//os.Exit(1)
 	headers := reqHeader
 
 	//client := session
