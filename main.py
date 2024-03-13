@@ -503,6 +503,8 @@ def module_scroll_frame(num1, num2):
       tk.Label(modules_frame02_01, bg=c13, fg="#fff", textvariable=Setting.suc_nmspam_Label, font=("Roboto", 12)).place(x=335,y=169)
       tk.Label(modules_frame02_01, bg=c13, fg="#fff", textvariable=Setting.fai_nmspam_Label, font=("Roboto", 12)).place(x=335,y=194)
 
+      printl("info", "Open Spammer Tab")
+
   if num1 == 2:
     if num2 == 1:
       # Setting
