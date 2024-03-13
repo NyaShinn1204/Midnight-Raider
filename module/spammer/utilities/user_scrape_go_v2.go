@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -26,17 +27,19 @@ func main() {
 	channelID := args[1]
 	token := args[2]
 
+	extractToken := extract(token)
+
 	fmt.Printf("Server ID: %s\n", serverID)
 	fmt.Printf("Channel ID: %s\n", channelID)
-	fmt.Printf("Token: %s\n", token)
+	fmt.Printf("Token: %s\n", extractToken)
 	response := checktoken(token)
 	if response == 200 {
-		fmt.Printf("[VALID]   %v [%v]\n", token, response)
+		fmt.Printf("[VALID]   %v [%v]\n", extractToken, response)
 	} else {
-		fmt.Printf("[INVALID] %v [%v]", token, response)
+		fmt.Printf("[INVALID] %v [%v]", extractToken, response)
 		os.Exit(1)
 	}
-	fmt.Printf("Scraping in %s with %s\n", serverID, token)
+	fmt.Printf("Scraping in %s with %s\n", serverID, extractToken)
 	members := getMembers(token, serverID, channelID)
 	fmt.Printf("Total Scrapped: %d\n", len(members))
 	userIDs := make([]string, len(members))
@@ -46,6 +49,29 @@ func main() {
 
 	fmt.Printf("Scrapped Id: %v\n", userIDs)
 
+}
+
+func extract(formatToken string) string {
+	dotCount := 0
+	var dotIndices []int
+
+	// "."のインデックスを検索する
+	for i, char := range formatToken {
+		if char == '.' {
+			dotCount++
+			dotIndices = append(dotIndices, i)
+		}
+	}
+
+	// "."が2個以上見つかった場合、2番目の"."の直後をマスキングする
+	if dotCount >= 2 {
+		secondDotIndex := dotIndices[1]
+		maskedPart := strings.Repeat("*", len(formatToken)-secondDotIndex-1)
+		return formatToken[:secondDotIndex+1] + maskedPart
+	}
+
+	// "."が2個未満の場合は元の文字列をそのまま返す
+	return formatToken
 }
 
 func checktoken(token string) int {
