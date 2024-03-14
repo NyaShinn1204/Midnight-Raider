@@ -92,7 +92,7 @@ func main() {
 				}
 				if len(users) > 0 && allping == "True" {
 					// ランダムに数個取り出す
-					randomIDs := getRandomIDs(args[8:], mentions)
+					randomIDs := getRandomIDs(args[10:], mentions)
 					formattedIDs := make([]string, len(randomIDs))
 					for i, id := range randomIDs {
 						formattedIDs[i] = formatID(id)
