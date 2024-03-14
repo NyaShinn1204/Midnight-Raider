@@ -16,6 +16,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 var channelid string
@@ -62,7 +64,20 @@ func main() {
 	allping = args[8]
 	mentions_str = args[9]
 	mentions, err := strconv.Atoi(mentions_str)
-	users := args[10:]
+	//	users := args[10:]
+	token := getRandomToken(token_file)
+
+	fmt.Printf("Server ID: %s\n", serverid)
+	fmt.Printf("Channel ID: %s\n", channelid)
+	fmt.Printf("Token: %s\n", token)
+
+	members := getMembers(token, serverid, channelid)
+	fmt.Printf("Total Scrapped: %d\n", len(members))
+	userIDs := make([]string, len(members))
+	for i, member := range members {
+		userIDs[i] = member
+	}
+	fmt.Printf("Scrapped Id: %v\n", userIDs)
 
 	contents_tmp := ""
 
@@ -90,16 +105,33 @@ func main() {
 					}
 					channelid = randomchannel
 				}
-				if len(users) > 0 && allping == "True" {
-					// ランダムに数個取り出す
-					randomIDs := getRandomIDs(args[10:], mentions)
-					formattedIDs := make([]string, len(randomIDs))
-					for i, id := range randomIDs {
-						formattedIDs[i] = formatID(id)
-					}
-					fmt.Printf("Random IDs: %s\n", strings.Join(formattedIDs, " | "))
+				if allping == "True" {
+					//// ランダムに数個取り出す
+					//randomIDs := getRandomIDs(args[10:], mentions)
+					//formattedIDs := make([]string, len(randomIDs))
+					//for i, id := range randomIDs {
+					//	formattedIDs[i] = formatID(id)
+					//}
+					//fmt.Printf("Random IDs: %s\n", strings.Join(formattedIDs, " | "))
+					// ランダムシードの初期化
+					rand.Seed(time.Now().UnixNano())
 
-					contents_tmp = contents + " " + strings.Join(formattedIDs, " ")
+					// 取り出す要素の数
+					numElements := mentions
+
+					selectedElements := make([]string, numElements)
+					if len(userIDs) > 0 {
+						for i := 0; i < numElements; i++ {
+							randomIndex := rand.Intn(len(userIDs))
+							selectedElements[i] = "<@" + userIDs[randomIndex] + ">"
+						}
+					} else {
+						fmt.Println("元の配列に要素がありません")
+					}
+
+					convert_mentions := strings.Join(selectedElements, ", ")
+
+					contents_tmp = contents + " " + convert_mentions
 				}
 				sendRequest(fmt.Sprintf("https://discord.com/api/v9/channels/%s/messages", channelid), contents_tmp, token_file, proxie_file)
 				fmt.Println()
@@ -225,7 +257,7 @@ func getBuildnum() (int, error) {
 	return buildNum, nil
 }
 
-func requestHeader(token string) map[string]string {
+func requestHeader(get_token string) map[string]string {
 	// ランダムなユーザーエージェントを生成
 	agentString := randomAgent()
 
@@ -262,7 +294,7 @@ func requestHeader(token string) map[string]string {
 		"Accept":             "*/*",
 		"Accept-Encoding":    "gzip, deflate, br",
 		"Accept-Language":    "en-US",
-		"Authorization":      token,
+		"Authorization":      get_token,
 		"Connection":         "keep-alive",
 		"Content-Type":       "application/json",
 		"Host":               "discord.com",
@@ -404,7 +436,7 @@ func readProxiesFromFile(filename string) []*url.URL {
 	return proxyList
 }
 
-func getChannels(token string, guildID string) ([]string, error) {
+func getChannels(get_token string, guildID string) ([]string, error) {
 	var channels []string
 
 	for {
@@ -414,7 +446,7 @@ func getChannels(token string, guildID string) ([]string, error) {
 			return nil, err
 		}
 
-		reqHeader := requestHeader(token)
+		reqHeader := requestHeader(get_token)
 		headers := reqHeader
 		// リクエストヘッダー設定
 		for key, value := range headers {
@@ -461,7 +493,7 @@ func getChannels(token string, guildID string) ([]string, error) {
 
 			return channels, nil
 		} else {
-			fmt.Println(token)
+			fmt.Println(get_token)
 			fmt.Println(resp.StatusCode)
 			return nil, fmt.Errorf("Request failed with status code: %d", resp.StatusCode)
 		}
@@ -487,29 +519,101 @@ func chooseRandomChannel(channels []string) (string, error) {
 	return channels[index], nil
 }
 
-func getRandomIDs(inputIDs []string, count int) []string {
-	rand.Seed(time.Now().UnixNano())
-	length := len(inputIDs)
-
-	if count >= length {
-		return inputIDs
+func getMembers(get_token, server, channel string) []string {
+	conn, _, err := websocket.DefaultDialer.Dial("wss://gateway.discord.gg/?v=10&encoding=json", nil)
+	if err != nil {
+		fmt.Println("dial:", err)
 	}
+	defer conn.Close()
 
-	result := make([]string, count)
-	perm := rand.Perm(length)
+	users := []string{}
+	for {
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			fmt.Println("read:", err)
+			if err.Error() == "websocket: close 4000: Unknown error." {
+				fmt.Println("トークンがサーバーに入っていません")
+				os.Exit(1)
+			}
+			return nil
+		}
 
-	for i := 0; i < count; i++ {
-		result[i] = inputIDs[perm[i]]
+		var response map[string]interface{}
+		if err := json.Unmarshal(message, &response); err != nil {
+			fmt.Println("unmarshal:", err)
+			return nil
+		}
+
+		if response["t"] == nil {
+			sendData := map[string]interface{}{
+				"op": 2,
+				"d": map[string]interface{}{
+					"token":        get_token,
+					"capabilities": 16381,
+					"properties": map[string]interface{}{
+						"os":                       "Android",
+						"browser":                  "Discord Android",
+						"device":                   "Android",
+						"system_locale":            "ja-JP",
+						"browser_user_agent":       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+						"browser_version":          "122.0.0.0",
+						"os_version":               "",
+						"referrer":                 "",
+						"referring_domain":         "",
+						"referrer_current":         "",
+						"referring_domain_current": "",
+						"release_channel":          "stable",
+						"client_build_number":      263582,
+						"client_event_source":      nil,
+					},
+					"presence": map[string]interface{}{
+						"status":     "invisible",
+						"since":      0,
+						"activities": []interface{}{},
+						"afk":        false,
+					},
+					"compress": false,
+					"client_state": map[string]interface{}{
+						"guild_versions":              map[string]interface{}{},
+						"highest_last_message_id":     "0",
+						"read_state_version":          0,
+						"user_guild_settings_version": -1,
+						"private_channels_version":    "0",
+						"api_code_version":            0,
+					},
+				},
+			}
+			if err := conn.WriteJSON(sendData); err != nil {
+				fmt.Println("write:", err)
+				return nil
+			}
+		} else if response["t"].(string) == "READY_SUPPLEMENTAL" {
+			sendData := map[string]interface{}{
+				"op": 14,
+				"d": map[string]interface{}{
+					"guild_id":   server,
+					"typing":     true,
+					"activities": true,
+					"threads":    true,
+					"channels": map[string]interface{}{
+						channel: [][]int{{0, 99}, {100, 199}, {200, 299}},
+					},
+				},
+			}
+			if err := conn.WriteJSON(sendData); err != nil {
+				fmt.Println("write:", err)
+				return nil
+			}
+		} else if response["t"].(string) == "GUILD_MEMBER_LIST_UPDATE" {
+			items := response["d"].(map[string]interface{})["ops"].([]interface{})
+			for _, item := range items {
+				for _, member := range item.(map[string]interface{})["items"].([]interface{}) {
+					if member.(map[string]interface{})["member"] != nil {
+						users = append(users, member.(map[string]interface{})["member"].(map[string]interface{})["user"].(map[string]interface{})["id"].(string))
+					}
+				}
+			}
+			return users
+		}
 	}
-
-	return result
-}
-
-func formatID(id string) string {
-	id = strings.ReplaceAll(id, "'", "")
-	id = strings.ReplaceAll(id, "\"", "")
-	id = strings.ReplaceAll(id, "[", "")
-	id = strings.ReplaceAll(id, "]", "")
-	id = strings.ReplaceAll(id, ",", "")
-	return fmt.Sprintf("<@%s>", id)
 }
