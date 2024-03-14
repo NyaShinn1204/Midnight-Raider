@@ -756,17 +756,12 @@ func joinerThread(token, serverID, inviteLink string, memberScreen string, answe
 			}
 			fmt.Println("成功しました")
 		}
-		//if memberScreen {
-		//	acceptRulesBypass(token, joinreq.JSON(), serverID, inviteLink)
-		//}
-		//if changeNick {
-		//	changeNicker(token, serverID, nickname)
-		//}
 		requeststatuscode = joinreq.StatusCode
 	} else if joinreq.StatusCode == 403 {
-		if strings.Contains(string(body), "You need to verify your account in order to perform this action.") ||
-			strings.Contains(string(body), "このユーザーは、このギルドからBANされています。") ||
-			strings.Contains(string(body), "The user is banned from this guild.") {
+		if strings.Contains(string(body), "You need to verify your account in order to perform this action.") {
+			fmt.Printf("Maybe Lock Token | %s\n", extractToken)
+		}
+		if strings.Contains(string(body), "このユーザーは、このギルドからBANされています。") || strings.Contains(string(body), "The user is banned from this guild.") {
 			fmt.Printf("Banned from Server | %s\n", extractToken)
 			//fmt.Println("失敗しました")
 		}
