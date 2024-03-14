@@ -67,17 +67,11 @@ func main() {
 	//	users := args[10:]
 	token := getRandomToken(token_file)
 
-	fmt.Printf("Server ID: %s\n", serverid)
-	fmt.Printf("Channel ID: %s\n", channelid)
-	fmt.Printf("Token: %s\n", token)
-
 	members := getMembers(token, serverid, channelid)
-	fmt.Printf("Total Scrapped: %d\n", len(members))
 	userIDs := make([]string, len(members))
 	for i, member := range members {
 		userIDs[i] = member
 	}
-	fmt.Printf("Scrapped Id: %v\n", userIDs)
 
 	contents_tmp := ""
 
