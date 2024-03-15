@@ -38,7 +38,7 @@ def monitor_process(module_status):
     global process
     while process.poll() is None:
         output_bytes = process.stdout.readline().strip()
-        output = output_bytes.encode("utf-8")
+        output = output_bytes.encode("utf-8", errors="ignore")
 #        print(output)
         if output:
             if b'[+]' in output:
