@@ -87,8 +87,11 @@ def gui_close():
     rpc_thread.terminate()
   #rpc.stop_threads = True
 
+title = f"Midnight Raider "+version
+
 System.Size(120, 30)
 System.Clear()
+System.Title(title)
 
 # c2, c5, c7, c4
 
@@ -109,7 +112,7 @@ c13 = "#141B39"
 root = tk.Tk()
 root.geometry("1280x720")
 root.resizable(0, 0)
-root.title("Midnight Raider | "+version)
+root.title(title)
 root.iconbitmap("./data/icon.ico")
 root.configure(bg="#baebfb")
 root.protocol("WM_DELETE_WINDOW", gui_close)

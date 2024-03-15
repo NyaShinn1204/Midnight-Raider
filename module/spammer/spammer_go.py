@@ -13,14 +13,16 @@ def start(token_file, proxie_file, delay, tokens, module_status, serverid, chann
     users = ['None']
     print("Starting the process.")
     print(threads)
-    #if allping == True:
+    if allping == True:
+        allping = "True"
+    else:
+        allping= "None"
     #    users = user_scrape.get_members(serverid, channelid, random.choice(tokens))
     #    if users == None:
     #        print("[-] んーメンバーが取得できなかったっぽい token死なないように一回止めるね")
     #        return
     #    else:
     #        print(users)
-    allping = "True"
     print(delay)
     command = ['go', 'run', 'spammer_go.go', serverid, channelid, contents, f'{token_file}', f'{proxie_file}', f'{threads}', f'{allchannel}', f'{delay}', f'{allping}', f'{int(mentions)}']
     print(command)
@@ -37,14 +39,13 @@ def stop():
 def monitor_process(module_status):
     global process
     while process.poll() is None:
-        output_bytes = process.stdout.readline().strip()
-        output = output_bytes.encode("utf-8", errors="ignore")
+        output = process.stdout.readline().strip()
 #        print(output)
         if output:
-            if b'[+]' in output:
+            if '[+]' in output:
                 print(f"[+] 送信に成功しました")
                 module_status(2, 1, 1)
-            elif b'[-]' in output:
+            elif '[-]' in output:
                 print(f"[-] 送信に失敗しました")
                 module_status(2, 1, 2)
             else:
