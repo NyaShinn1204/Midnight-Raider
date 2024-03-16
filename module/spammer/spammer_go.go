@@ -47,24 +47,9 @@ func main() {
 	delay, err := strconv.Atoi(delay_str)
 	sleepDuration = time.Duration(delay) * time.Second
 
-	// delayから変換するやつバグってるので一時的に殺します
-	//delay, err := strconv.ParseFloat(delay_str, 64)
-
-	//// delayが整数かどうかをチェックし、整数の場合は秒単位に変換
-	//if delay == float64(int(delay)) {
-	//	sleepDuration = time.Duration(int(delay)) * time.Second
-	//} else {
-	//	sleepDuration = time.Duration(delay * float64(time.Second))
-	//}
-
-	// sleepDurationの間スリープ
-	//time.Sleep(sleepDuration)
-	//delay, err := strconv.Atoi(delay_str)
-
 	allping = args[8]
 	mentions_str = args[9]
 	mentions, err := strconv.Atoi(mentions_str)
-	//	users := args[10:]
 	token := getRandomToken(token_file)
 
 	members := getMembers(token, serverid, channelid)
@@ -74,8 +59,6 @@ func main() {
 	}
 
 	contents_tmp := ""
-
-	//fmt.Println(args[7:])
 
 	if err != nil {
 		fmt.Println("変換に失敗しました:", err)
@@ -100,17 +83,8 @@ func main() {
 					channelid = randomchannel
 				}
 				if allping == "True" {
-					//// ランダムに数個取り出す
-					//randomIDs := getRandomIDs(args[10:], mentions)
-					//formattedIDs := make([]string, len(randomIDs))
-					//for i, id := range randomIDs {
-					//	formattedIDs[i] = formatID(id)
-					//}
-					//fmt.Printf("Random IDs: %s\n", strings.Join(formattedIDs, " | "))
-					// ランダムシードの初期化
 					rand.Seed(time.Now().UnixNano())
 
-					// 取り出す要素の数
 					numElements := mentions
 
 					selectedElements := make([]string, numElements)
@@ -364,8 +338,6 @@ func sendRequest(url string, contents string, token_file string, proxie_file str
 
 	defer requests.Body.Close()
 
-	//fmt.Println(requests.StatusCode)
-
 	if requests.StatusCode == 200 {
 		fmt.Println("[+] Succes to Sent ChannelID:", channelid, requests.StatusCode, proxy)
 	} else {
@@ -446,7 +418,6 @@ func getChannels(get_token string, guildID string) ([]string, error) {
 		for key, value := range headers {
 			req.Header.Set(key, value)
 		}
-		//req.Header.Set("authorization", token)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
