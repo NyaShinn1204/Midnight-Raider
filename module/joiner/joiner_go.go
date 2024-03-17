@@ -28,6 +28,8 @@ import (
 // func main()で初期設定 token_fileからtokenをスライスする
 // func start()でスライスされたtokenの分joinerThreadを実行する
 // func joinerThread()でメイン処理
+// はぁ..まじでこのクソコードどうやって直すんだよｶｽｶﾞﾖwww
+// 直す方法誰か教えてください  XD:
 
 // Usage: go run joiner_go.go <TOKEN FILE PATH   FULL PATH OR LOCAL PATH> None <INVITE LINK THIS> False 3 False None None False None <Use Proxy "True" or "False"> <PROXIE FILE PATH   FULL PATH OR LOCAL PATH>
 // Example: go run joiner_go.go C:/Users/Shin/Downloads/token-lol.txt None THCcUsts False 0.1 False None None False None
