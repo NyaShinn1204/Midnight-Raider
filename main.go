@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"midnight/module/spammer"
 	get_info "midnight/utilities"
 	"sort"
 	"strconv"
@@ -30,7 +31,7 @@ func main() {
 
 	opt := map[int]string{
 		1: "Coming Soon",
-		2: "Coming Soon",
+		2: "Spammer",
 		3: "Coming Soon",
 		4: "Coming Soon",
 		5: "Coming Soon",
@@ -39,15 +40,14 @@ func main() {
 	}
 	PrintMenu(opt)
 
-	fmt.Println("\n")
-
-	mode := getInput("Mode >> ")
+	mode := getInput("\nMode >> ")
 
 	switch mode {
 	case "1", "01":
 		fmt.Println("Mass DM")
 	case "2", "02":
 		fmt.Println("Dm Spam")
+		spammer.Start()
 	case "3", "03":
 		fmt.Println("React Verify")
 	case "4", "04":
