@@ -46,8 +46,18 @@ func main() {
 	case "1", "01":
 		fmt.Println("Mass DM")
 	case "2", "02":
-		fmt.Println("Dm Spam")
-		spammer.Start()
+		serverid := getInput("Server ID: ")
+		channelid := getInput("Channel ID: ")
+		msg := getInput("Message: ")
+		tokens_file := getInput("Tokens File: ")
+		proxie_file := getInput("Proxie File: ")
+		allchannel := getInput("Allchannel: ")
+		threads := getInput("Threads: ")
+		delay := getInput("Delay: ")
+		allping := getInput("Allping: ")
+		mentions_str := getInput("Mentions: ")
+		//fmt.Println("Dm Spam")
+		spammer.Start(serverid, channelid, msg, tokens_file, proxie_file, allchannel, threads, delay, allping, mentions_str)
 	case "3", "03":
 		fmt.Println("React Verify")
 	case "4", "04":
