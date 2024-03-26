@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"log"
 	"midnight/module/spammer"
 	get_info "midnight/utilities"
+	"os"
 	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/fatih/color"
 )
@@ -40,24 +42,29 @@ func main() {
 	}
 	PrintMenu(opt)
 
-	mode := getInput("\nMode >> ")
+	mode := Input("\nMode >> ")
 
 	switch mode {
 	case "1", "01":
 		fmt.Println("Mass DM")
 	case "2", "02":
-		serverid := getInput("Server ID: ")
-		channelid := getInput("Channel ID: ")
-		msg := getInput("Message: ")
-		tokens_file := getInput("Tokens File: ")
-		proxie_file := getInput("Proxie File: ")
-		allchannel := getInput("Allchannel: ")
-		threads := getInput("Threads: ")
-		delay := getInput("Delay: ")
-		allping := getInput("Allping: ")
-		mentions_str := getInput("Mentions: ")
-		//fmt.Println("Dm Spam")
-		spammer.Start(serverid, channelid, msg, tokens_file, proxie_file, allchannel, threads, delay, allping, mentions_str)
+		serverid := Input("Server ID: ")
+		channelid := Input("Channel ID: ")
+		msg := Input("Message: ")
+		tokens_file := Input("Tokens File: ")
+		proxie_file := Input("Proxie File: ")
+		allchannel := InputBool("Allchannel")
+		threads := InputInt("Threads")
+		delay := InputInt("Delay")
+		//allping := getInput("Allping: ")
+		allping := InputBool("Allping")
+		mentions_str := 0
+		if allping {
+			//mentions_str := getInput("Mentions: ")
+			mentions_str = InputInt("How many Mentions?")
+			//fmt.Println("Dm Spam")
+		}
+		spammer.Start(serverid, channelid, msg, tokens_file, proxie_file, threads, allchannel, delay, allping, mentions_str)
 	case "3", "03":
 		fmt.Println("React Verify")
 	case "4", "04":
@@ -73,15 +80,32 @@ func main() {
 	}
 }
 
-func getInput(prompt string) string {
-	var input string
-	fmt.Print(prompt)
-	fmt.Scanln(&input)
-	// Trim any leading or trailing whitespace
-	input = strings.TrimSpace(input)
-	return input
+func Input(text string) string {
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Print(text)
+	scanner.Scan()
+	return scanner.Text()
 }
 
+func InputBool(text string) bool {
+	if Input(text+" y/n: ") == "y" {
+		return true
+	}
+	return false
+}
+
+// InputInt Takes user input from the Command line
+// and returns it as an int
+func InputInt(text string) int {
+	var d int
+
+	fmt.Print(text + ": ")
+	_, err := fmt.Scanln(&d)
+	if err != nil {
+		log.Println(err)
+	}
+	return d
+}
 func PrintMenu(options map[int]string) {
 	var maxLen int
 	for _, value := range options {
