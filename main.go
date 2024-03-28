@@ -44,6 +44,8 @@ func main() {
 
 	mode := Input("\nMode >> ")
 
+	// FIX LATER! SOON LOL
+	
 	switch mode {
 	case "1", "01":
 		fmt.Println("Mass DM")
