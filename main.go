@@ -45,6 +45,7 @@ func main() {
 	mode := Input("\nMode >> ")
 
 	// FIX LATER! SOON LOL
+	// やる気うせるなぁ.....
 	
 	switch mode {
 	case "1", "01":
